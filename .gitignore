@@ -1,0 +1,11 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Environment
+.env
+.DS_Store
+
+# React
+client/.env
+client/build/
