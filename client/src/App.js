@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './AuthContext.js';
 import Login from './Login.js';
 import Register from './Register.js';
-import Checkout from './Checkout.js';
 import Dashboard from './Dashboard.js';
 import Sales from './Sales.js';
+import Bills from './Bills.js';
+import Employees from './Employees.js';
+import SalesReports from './SalesReports.js';
+import Invoice from './Invoice.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 import './styles.css';
 
@@ -38,10 +41,28 @@ const Navigation = ({ onNavigate, currentPage }) => {
                 New Sale
               </button>
               <button 
-                onClick={() => onNavigate('checkout')}
-                className={`nav-button ${currentPage === 'checkout' ? 'active' : ''}`}
+                onClick={() => onNavigate('bills')}
+                className={`nav-button ${currentPage === 'bills' ? 'active' : ''}`}
               >
-                Checkout
+                Bills
+              </button>
+              <button 
+                onClick={() => onNavigate('employees')}
+                className={`nav-button ${currentPage === 'employees' ? 'active' : ''}`}
+              >
+                Employees
+              </button>
+              <button 
+                onClick={() => onNavigate('reports')}
+                className={`nav-button ${currentPage === 'reports' ? 'active' : ''}`}
+              >
+                Sales Reports
+              </button>
+              <button 
+                onClick={() => onNavigate('invoice')}
+                className={`nav-button ${currentPage === 'invoice' ? 'active' : ''}`}
+              >
+                Invoice
               </button>
               <button 
                 onClick={() => onNavigate('dashboard')}
@@ -118,8 +139,14 @@ const MainApp = () => {
         return <ProductManagement />;
       case 'sales':
         return <Sales />;
-      case 'checkout':
-        return <Checkout />;
+      case 'bills':
+        return <Bills />;
+      case 'employees':
+        return <Employees />;
+      case 'reports':
+        return <SalesReports />;
+      case 'invoice':
+        return <Invoice />;
       case 'dashboard':
         return <Dashboard />;
       default:
