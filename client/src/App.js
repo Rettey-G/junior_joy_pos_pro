@@ -4,6 +4,7 @@ import Login from './Login.js';
 import Register from './Register.js';
 import Checkout from './Checkout.js';
 import Dashboard from './Dashboard.js';
+import Sales from './Sales.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 
 // Navigation component
@@ -44,6 +45,19 @@ const Navigation = ({ onNavigate, currentPage }) => {
                 }}
               >
                 Products
+              </button>
+              <button 
+                onClick={() => onNavigate('sales')}
+                style={{ 
+                  background: currentPage === 'sales' ? 'white' : 'transparent',
+                  color: currentPage === 'sales' ? '#2196f3' : 'white',
+                  border: 'none',
+                  padding: '8px 15px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                New Sale
               </button>
               <button 
                 onClick={() => onNavigate('checkout')}
@@ -153,6 +167,8 @@ const MainApp = () => {
     switch (page) {
       case 'products':
         return <ProductManagement />;
+      case 'sales':
+        return <Sales />;
       case 'checkout':
         return <Checkout />;
       case 'dashboard':
@@ -189,277 +205,333 @@ const MainApp = () => {
 // Product Management Component
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newProduct, setNewProduct] = useState({
+    code: '',
     name: '',
     price: '',
-    category: '',
-    description: '',
-    stock: ''
+    details: '',
+    specs: '',
+    imageUrl: '',
+    SOH: '',
+    category: ''
   });
   const [editingProduct, setEditingProduct] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const itemsPerPage = 20;
 
   useEffect(() => {
+    // Fetch products
     fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
-    setLoading(true);
     try {
       const response = await getProducts();
       setProducts(response.data);
-      setError(null);
+      setLoading(false);
     } catch (err) {
-      setError('Error fetching products: ' + err.message);
-      console.error('Error fetching products:', err);
-    } finally {
+      setError('Failed to fetch products');
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewProduct(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditingProduct(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleAddProduct = async (e) => {
+  const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
-      // Convert string values to numbers where appropriate
-      const productData = {
+      await createProduct({
         ...newProduct,
         price: parseFloat(newProduct.price),
-        stock: parseInt(newProduct.stock, 10)
-      };
-      
-      await createProduct(productData);
+        SOH: parseInt(newProduct.SOH, 10)
+      });
       setNewProduct({
+        code: '',
         name: '',
         price: '',
-        category: '',
-        description: '',
-        stock: ''
+        details: '',
+        specs: '',
+        imageUrl: '',
+        SOH: '',
+        category: ''
       });
       fetchProducts();
     } catch (err) {
-      setError('Error adding product: ' + err.message);
-      console.error('Error adding product:', err);
+      setError('Failed to create product');
     }
   };
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
     try {
-      // Convert string values to numbers where appropriate
-      const productData = {
+      await updateProduct(editingProduct._id, {
         ...editingProduct,
         price: parseFloat(editingProduct.price),
-        stock: parseInt(editingProduct.stock, 10)
-      };
-      
-      await updateProduct(editingProduct._id, productData);
+        SOH: parseInt(editingProduct.SOH, 10)
+      });
       setEditingProduct(null);
       fetchProducts();
     } catch (err) {
-      setError('Error updating product: ' + err.message);
-      console.error('Error updating product:', err);
+      setError('Failed to update product');
     }
   };
 
   const handleDeleteProduct = async (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await deleteProduct(id);
-        fetchProducts();
-      } catch (err) {
-        setError('Error deleting product: ' + err.message);
-        console.error('Error deleting product:', err);
-      }
+    try {
+      await deleteProduct(id);
+      fetchProducts();
+    } catch (err) {
+      setError('Failed to delete product');
     }
   };
+
+  // Filter products based on search term
+  const filteredProducts = products.filter(product => {
+    return (
+      (product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.code && product.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.details && product.details.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  });
+
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  if (loading) return <div>Loading products...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div>
       <h2>Product Management</h2>
       
-      {error && (
-        <div style={{ 
-          background: '#ffebee', 
-          color: '#c62828', 
-          padding: '10px', 
-          borderRadius: '4px',
-          marginBottom: '20px' 
-        }}>
-          {error}
+      {/* Search Bar */}
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Search products by name, code, or category..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // Reset to first page on search
+          }}
+          style={{ width: '100%', padding: '8px', fontSize: '16px' }}
+        />
+      </div>
+      
+      {/* Create Product Form */}
+      <div>
+        <h3>Add New Product</h3>
+        <form onSubmit={handleCreateProduct}>
+          <div>
+            <label>Code:</label>
+            <input
+              type="text"
+              value={newProduct.code}
+              onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label>Name:</label>
+            <input
+              type="text"
+              value={newProduct.name}
+              onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label>Price (MVR):</label>
+            <input
+              type="number"
+              value={newProduct.price}
+              onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label>Category:</label>
+            <input
+              type="text"
+              value={newProduct.category}
+              onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label>Details:</label>
+            <textarea
+              value={newProduct.details}
+              onChange={(e) => setNewProduct({...newProduct, details: e.target.value})}
+            />
+          </div>
+          <div>
+            <label>Specs:</label>
+            <textarea
+              value={newProduct.specs}
+              onChange={(e) => setNewProduct({...newProduct, specs: e.target.value})}
+            />
+          </div>
+          <div>
+            <label>Image URL:</label>
+            <input
+              type="text"
+              value={newProduct.imageUrl}
+              onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
+            />
+          </div>
+          <div>
+            <label>Stock on Hand:</label>
+            <input
+              type="number"
+              value={newProduct.SOH}
+              onChange={(e) => setNewProduct({...newProduct, SOH: e.target.value})}
+              required
+            />
+          </div>
+          <button type="submit">Add Product</button>
+        </form>
+      </div>
+
+      {/* Edit Product Form */}
+      {editingProduct && (
+        <div>
+          <h3>Edit Product</h3>
+          <form onSubmit={handleUpdateProduct}>
+            <div>
+              <label>Code:</label>
+              <input
+                type="text"
+                value={editingProduct.code}
+                onChange={(e) => setEditingProduct({...editingProduct, code: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label>Name:</label>
+              <input
+                type="text"
+                value={editingProduct.name}
+                onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label>Price (MVR):</label>
+              <input
+                type="number"
+                value={editingProduct.price}
+                onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label>Category:</label>
+              <input
+                type="text"
+                value={editingProduct.category}
+                onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label>Details:</label>
+              <textarea
+                value={editingProduct.details}
+                onChange={(e) => setEditingProduct({...editingProduct, details: e.target.value})}
+              />
+            </div>
+            <div>
+              <label>Specs:</label>
+              <textarea
+                value={editingProduct.specs}
+                onChange={(e) => setEditingProduct({...editingProduct, specs: e.target.value})}
+              />
+            </div>
+            <div>
+              <label>Image URL:</label>
+              <input
+                type="text"
+                value={editingProduct.imageUrl}
+                onChange={(e) => setEditingProduct({...editingProduct, imageUrl: e.target.value})}
+              />
+            </div>
+            <div>
+              <label>Stock on Hand:</label>
+              <input
+                type="number"
+                value={editingProduct.SOH}
+                onChange={(e) => setEditingProduct({...editingProduct, SOH: e.target.value})}
+                required
+              />
+            </div>
+            <button type="submit">Update Product</button>
+            <button type="button" onClick={() => setEditingProduct(null)}>Cancel</button>
+          </form>
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '20px' }}>
-        {/* Product List */}
-        <div style={{ flex: '2' }}>
-          <h3>Products</h3>
-          {loading ? (
-            <p>Loading products...</p>
-          ) : products.length === 0 ? (
-            <p>No products found. Add your first product!</p>
-          ) : (
-            <div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f5f5f5' }}>
-                    <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Name</th>
-                    <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Price</th>
-                    <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Category</th>
-                    <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Stock</th>
-                    <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map(product => (
-                    <tr key={product._id}>
-                      <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>{product.name}</td>
-                      <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>${product.price.toFixed(2)}</td>
-                      <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>{product.category}</td>
-                      <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>{product.stock}</td>
-                      <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>
-                        <button 
-                          onClick={() => setEditingProduct(product)}
-                          style={{ 
-                            background: '#2196f3', 
-                            color: 'white', 
-                            border: 'none', 
-                            padding: '5px 10px', 
-                            borderRadius: '4px',
-                            marginRight: '5px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteProduct(product._id)}
-                          style={{ 
-                            background: '#f44336', 
-                            color: 'white', 
-                            border: 'none', 
-                            padding: '5px 10px', 
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+      {/* Product List */}
+      <div>
+        <h3>Product List</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Price (MVR)</th>
+              <th>Category</th>
+              <th>SOH</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentItems.map(product => (
+              <tr key={product._id}>
+                <td>{product.code}</td>
+                <td>{product.name}</td>
+                <td>{product.price.toFixed(2)}</td>
+                <td>{product.category}</td>
+                <td>{product.SOH}</td>
+                <td>
+                  <button onClick={() => setEditingProduct(product)}>Edit</button>
+                  <button onClick={() => handleDeleteProduct(product._id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        {/* Pagination */}
+        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button 
+              key={i + 1} 
+              onClick={() => paginate(i + 1)}
+              style={{
+                margin: '0 5px',
+                padding: '5px 10px',
+                backgroundColor: currentPage === i + 1 ? '#4CAF50' : '#f1f1f1',
+                color: currentPage === i + 1 ? 'white' : 'black',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
         </div>
-
-        {/* Add/Edit Product Form */}
-        <div style={{ flex: '1', background: '#f5f5f5', padding: '20px', borderRadius: '8px' }}>
-          <h3>{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
-          <form onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Name:</label>
-              <input
-                type="text"
-                name="name"
-                value={editingProduct ? editingProduct.name : newProduct.name}
-                onChange={editingProduct ? handleEditInputChange : handleInputChange}
-                required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-              />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Price:</label>
-              <input
-                type="number"
-                name="price"
-                step="0.01"
-                value={editingProduct ? editingProduct.price : newProduct.price}
-                onChange={editingProduct ? handleEditInputChange : handleInputChange}
-                required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-              />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Category:</label>
-              <input
-                type="text"
-                name="category"
-                value={editingProduct ? editingProduct.category : newProduct.category}
-                onChange={editingProduct ? handleEditInputChange : handleInputChange}
-                required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-              />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Description:</label>
-              <textarea
-                name="description"
-                value={editingProduct ? editingProduct.description : newProduct.description}
-                onChange={editingProduct ? handleEditInputChange : handleInputChange}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd', minHeight: '80px' }}
-              />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Stock:</label>
-              <input
-                type="number"
-                name="stock"
-                value={editingProduct ? editingProduct.stock : newProduct.stock}
-                onChange={editingProduct ? handleEditInputChange : handleInputChange}
-                required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <button 
-                type="submit"
-                style={{ 
-                  background: '#4caf50', 
-                  color: 'white', 
-                  border: 'none', 
-                  padding: '10px 15px', 
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                {editingProduct ? 'Update Product' : 'Add Product'}
-              </button>
-              {editingProduct && (
-                <button 
-                  type="button"
-                  onClick={() => setEditingProduct(null)}
-                  style={{ 
-                    background: '#9e9e9e', 
-                    color: 'white', 
-                    border: 'none', 
-                    padding: '10px 15px', 
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
+        
+        <div style={{ marginTop: '10px', textAlign: 'center' }}>
+          Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredProducts.length)} of {filteredProducts.length} products
         </div>
       </div>
     </div>
