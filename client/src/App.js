@@ -13,7 +13,7 @@ const Navigation = ({ onNavigate, currentPage }) => {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
   
   return (
-    <nav className="navbar">
+    <nav className="navbar fixed-navbar">
       <div className="container navbar-container">
         <div className="navbar-brand">
           Junior Joy POS
@@ -135,10 +135,10 @@ const MainApp = () => {
         {renderContent()}
       </div>
       
-      <footer className="footer">
-        <div>Junior Joy POS System</div>
-        <div className="backend-status">
-          Backend Status: {status}
+      <footer className="footer modern-footer">
+        <div className="footer-content">
+          <span>Junior Joy POS System &copy; {new Date().getFullYear()}</span>
+          <span className="backend-status">Backend Status: {status}</span>
         </div>
       </footer>
     </div>
@@ -163,6 +163,8 @@ const ProductManagement = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [showAddModal, setShowAddModal] = useState(false);
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -229,14 +231,19 @@ const ProductManagement = () => {
     }
   };
 
-  // Filter products based on search term
+  // Get unique categories for the filter dropdown
+  const categories = ['All', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+
+  // Filter products based on search term and category
   const filteredProducts = products.filter(product => {
-    return (
+    const matchesCategory = categoryFilter === 'All' || product.category === categoryFilter;
+    const matchesSearch = (
       (product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (product.code && product.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (product.details && product.details.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+    return matchesCategory && matchesSearch;
   });
 
   // Calculate pagination
@@ -256,105 +263,125 @@ const ProductManagement = () => {
       <h2>Product Management</h2>
       
       {/* Search Bar */}
-      <div className="search-container">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search products by name, code, or category..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1); // Reset to first page on search
-          }}
-        />
+      <div className="search-container" style={{flexDirection: 'column', alignItems: 'flex-end', gap: '10px'}}>
+        <div style={{display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap'}}>
+          <select
+            className="form-control"
+            style={{maxWidth: 180}}
+            value={categoryFilter}
+            onChange={e => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
+          >
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search products by name, code, or category..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+          <button className="btn btn-primary" type="button" onClick={() => setShowAddModal(true)}>Add Product</button>
+        </div>
       </div>
       
-      {/* Create Product Form */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Add New Product</h3>
+      {/* Add Product Modal */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="card-header">
+              <h3 className="card-title">Add New Product</h3>
+            </div>
+            <div className="card-body">
+              <form onSubmit={e => { handleCreateProduct(e); setShowAddModal(false); }}>
+                <div className="form-group">
+                  <label className="form-label">Code:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newProduct.code}
+                    onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Name:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Price (MVR):</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Category:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newProduct.category}
+                    onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Details:</label>
+                  <textarea
+                    className="form-control"
+                    value={newProduct.details}
+                    onChange={(e) => setNewProduct({...newProduct, details: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Specs:</label>
+                  <textarea
+                    className="form-control"
+                    value={newProduct.specs}
+                    onChange={(e) => setNewProduct({...newProduct, specs: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Image URL:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newProduct.imageUrl}
+                    onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Stock on Hand:</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={newProduct.SOH}
+                    onChange={(e) => setNewProduct({...newProduct, SOH: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="d-flex gap-2">
+                  <button type="submit" className="btn btn-primary">Add Product</button>
+                  <button type="button" className="btn btn-danger" onClick={() => setShowAddModal(false)}>Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
-        <div className="card-body">
-          <form onSubmit={handleCreateProduct}>
-            <div className="form-group">
-              <label className="form-label">Code:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={newProduct.code}
-                onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Name:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={newProduct.name}
-                onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Price (MVR):</label>
-              <input
-                type="number"
-                className="form-control"
-                value={newProduct.price}
-                onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Category:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={newProduct.category}
-                onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Details:</label>
-              <textarea
-                className="form-control"
-                value={newProduct.details}
-                onChange={(e) => setNewProduct({...newProduct, details: e.target.value})}
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Specs:</label>
-              <textarea
-                className="form-control"
-                value={newProduct.specs}
-                onChange={(e) => setNewProduct({...newProduct, specs: e.target.value})}
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Image URL:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={newProduct.imageUrl}
-                onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Stock on Hand:</label>
-              <input
-                type="number"
-                className="form-control"
-                value={newProduct.SOH}
-                onChange={(e) => setNewProduct({...newProduct, SOH: e.target.value})}
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">Add Product</button>
-          </form>
-        </div>
-      </div>
+      )}
 
       {/* Edit Product Form */}
       {editingProduct && (

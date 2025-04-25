@@ -75,6 +75,20 @@ p {
   padding: var(--spacing-md) var(--spacing-lg);
   box-shadow: var(--shadow);
   margin-bottom: var(--spacing-xl);
+  position: relative;
+}
+
+.fixed-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(33,150,243,0.09);
+}
+
+body {
+  padding-top: 72px; /* Adjust if navbar height changes */
 }
 
 .navbar-container {
@@ -266,6 +280,38 @@ textarea.form-control {
   box-shadow: var(--shadow);
   margin-bottom: var(--spacing-lg);
   overflow: hidden;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(33, 150, 243, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+.modal-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 32px rgba(33,150,243,0.13);
+  max-width: 420px;
+  width: 95vw;
+  padding: 0;
+  animation: modalIn 0.22s cubic-bezier(.57,1.4,.69,.94);
+  border: 1.5px solid #e3eaf1;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 500px) {
+  .modal-card {
+    max-width: 99vw;
+    padding: 0;
+  }
 }
 
 .card-header {
