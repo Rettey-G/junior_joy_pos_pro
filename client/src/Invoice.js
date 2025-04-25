@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getSales } from './api';
 import './styles.css';
 
+// Fallback sample invoice in case no data is available
 const sampleInvoice = {
   billNumber: '20250425-1234',
   date: new Date().toLocaleString(),
@@ -21,11 +23,57 @@ const sampleInvoice = {
 };
 
 const Invoice = () => {
+  const [invoice, setInvoice] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchLatestInvoice = async () => {
+      setLoading(true);
+      try {
+        // Get the most recent sale/bill
+        const response = await getSales(1, 1);
+        if (response && response.data && response.data.sales && response.data.sales.length > 0) {
+          const latestSale = response.data.sales[0];
+          
+          // Format the data for invoice display
+          setInvoice({
+            billNumber: latestSale.billNumber || 'N/A',
+            date: latestSale.createdAt ? new Date(latestSale.createdAt).toLocaleString() : new Date().toLocaleString(),
+            customer: latestSale.customer || 'Walk-in Customer',
+            cashier: latestSale.cashier || 'Staff',
+            items: latestSale.products || [],
+            subtotal: latestSale.subtotal || 0,
+            gst: latestSale.gst || 0,
+            serviceCharge: latestSale.serviceCharge || 0,
+            discount: latestSale.discount || 0,
+            total: latestSale.total || 0,
+            paid: latestSale.amountPaid || 0,
+            change: latestSale.change || 0
+          });
+        } else {
+          // No sales found, use sample data
+          setInvoice(sampleInvoice);
+        }
+      } catch (err) {
+        console.error('Error fetching invoice:', err);
+        setError('Failed to fetch invoice data');
+        // Fall back to sample data
+        setInvoice(sampleInvoice);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestInvoice();
+  }, []);
+
   const handlePrint = () => {
     window.print();
   };
 
-  const inv = sampleInvoice; // Replace with real data from backend
+  // Use the fetched invoice or fall back to sample
+  const inv = invoice || sampleInvoice;
 
   return (
     <div className="invoice-page" style={{maxWidth: 600, margin: '0 auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(33,150,243,0.08)'}}>

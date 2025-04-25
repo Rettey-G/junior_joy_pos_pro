@@ -16,12 +16,19 @@ const Bills = () => {
 
   const fetchBills = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await getSales(1, 100); // fetch up to 100 bills
-      setBills(response.data.sales || []);
-      setLoading(false);
+      if (response && response.data && response.data.sales) {
+        setBills(response.data.sales);
+      } else {
+        setBills([]);
+      }
     } catch (err) {
-      setError('Failed to fetch bills');
+      console.error('Error fetching bills:', err);
+      setError('Failed to fetch bills: ' + (err.response?.data?.message || err.message));
+      setBills([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -39,13 +46,26 @@ const Bills = () => {
 
   const handleSave = async (bill) => {
     setSaving(true);
+    setError(null);
     try {
+      // Validate edit lines
+      const hasInvalidLines = editLines.some(line => 
+        !line.quantity || line.quantity <= 0 || !line.price || line.price <= 0
+      );
+      
+      if (hasInvalidLines) {
+        setError('All products must have valid quantity and price');
+        setSaving(false);
+        return;
+      }
+      
       // Prepare updated bill data
       const updatedProducts = editLines.map(line => ({
         ...line,
         price: Number(line.price),
         quantity: Number(line.quantity)
       }));
+      
       // Calculate new total based on updated products
       const subtotal = updatedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const gst = subtotal * 0.16;
@@ -60,13 +80,16 @@ const Bills = () => {
         serviceCharge,
         total
       });
+      
       setEditingBillId(null);
       setEditLines([]);
       fetchBills();
     } catch (err) {
-      setError('Failed to save bill');
+      console.error('Error saving bill:', err);
+      setError('Failed to save bill: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (

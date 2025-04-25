@@ -17,12 +17,15 @@ const Employees = () => {
 
   const fetchEmployees = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await getEmployees();
       setEmployees(res.data || []);
-      setLoading(false);
     } catch (err) {
-      setError('Failed to fetch employees');
+      console.error('Error fetching employees:', err);
+      setError('Failed to fetch employees: ' + (err.response?.data?.message || err.message));
+      setEmployees([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -38,26 +41,38 @@ const Employees = () => {
 
   const handleSave = async (id) => {
     setSaving(true);
+    setError(null);
     try {
       await updateEmployee(id, editData);
       setEditingId(null);
       fetchEmployees();
     } catch (err) {
-      setError('Failed to save employee');
+      console.error('Error saving employee:', err);
+      setError('Failed to save employee: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const handleAdd = async () => {
+    // Validate input
+    if (!newEmployee.name.trim() || !newEmployee.salary) {
+      setError('Name and salary are required');
+      return;
+    }
+    
     setSaving(true);
+    setError(null);
     try {
       await createEmployee(newEmployee);
       setNewEmployee({ name: '', salary: '' });
       fetchEmployees();
     } catch (err) {
-      setError('Failed to add employee');
+      console.error('Error adding employee:', err);
+      setError('Failed to add employee: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (
