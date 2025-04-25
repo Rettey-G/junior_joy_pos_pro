@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./db');
 const productRoutes = require('./routes/products');
+const authRoutes = require('./routes/auth');
+const salesRoutes = require('./routes/sales');
+const { auth } = require('./middleware/auth');
 
 const app = express();
 
@@ -14,11 +17,18 @@ app.use(express.json());
 connectDB();
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/sales', salesRoutes);
 
 // Test route
 app.get('/', (req, res) => {
   res.send('POS Backend Running');
+});
+
+// Protected test route
+app.get('/api/protected', auth, (req, res) => {
+  res.json({ message: 'This is a protected route', user: req.user });
 });
 
 const PORT = process.env.PORT || 5000;
