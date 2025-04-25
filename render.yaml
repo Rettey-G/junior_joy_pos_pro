@@ -5,7 +5,7 @@ services:
   - type: web
     name: junior-joy-pos-backend
     env: node
-    rootDir: server
+    rootDir: .
     buildCommand: npm install
     startCommand: node index.js
     envVars:
