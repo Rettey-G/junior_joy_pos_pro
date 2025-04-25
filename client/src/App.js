@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from './AuthContext';
-import Login from './Login';
-import Register from './Register';
-import Checkout from './Checkout';
-import Dashboard from './Dashboard';
+import { AuthProvider, useAuth } from './AuthContext.js';
+import Login from './Login.js';
+import Register from './Register.js';
+import Checkout from './Checkout.js';
+import Dashboard from './Dashboard.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 
 // Navigation component
