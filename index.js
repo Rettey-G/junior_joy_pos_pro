@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./db');
+const productRoutes = require('./routes/products');
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use(express.json());
 
 // Database connection
 connectDB();
+
+// Routes
+app.use('/api/products', productRoutes);
 
 // Test route
 app.get('/', (req, res) => {
