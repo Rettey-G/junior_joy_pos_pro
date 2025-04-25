@@ -1,8 +1,193 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './AuthContext';
+import Login from './Login';
+import Register from './Register';
+import Checkout from './Checkout';
+import Dashboard from './Dashboard';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 
-function App() {
+// Navigation component
+const Navigation = ({ onNavigate, currentPage }) => {
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
+  
+  return (
+    <nav style={{ 
+      background: '#2196f3', 
+      padding: '10px 20px',
+      color: 'white',
+      marginBottom: '20px'
+    }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div style={{ fontWeight: 'bold', fontSize: '20px' }}>
+          Junior Joy POS
+        </div>
+        
+        {isAuthenticated ? (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ marginRight: '20px' }}>
+              Welcome, {user.name} ({user.role})
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => onNavigate('products')}
+                style={{ 
+                  background: currentPage === 'products' ? 'white' : 'transparent',
+                  color: currentPage === 'products' ? '#2196f3' : 'white',
+                  border: 'none',
+                  padding: '8px 15px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Products
+              </button>
+              <button 
+                onClick={() => onNavigate('checkout')}
+                style={{ 
+                  background: currentPage === 'checkout' ? 'white' : 'transparent',
+                  color: currentPage === 'checkout' ? '#2196f3' : 'white',
+                  border: 'none',
+                  padding: '8px 15px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Checkout
+              </button>
+              <button 
+                onClick={() => onNavigate('dashboard')}
+                style={{ 
+                  background: currentPage === 'dashboard' ? 'white' : 'transparent',
+                  color: currentPage === 'dashboard' ? '#2196f3' : 'white',
+                  border: 'none',
+                  padding: '8px 15px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Dashboard
+              </button>
+              <button 
+                onClick={logout}
+                style={{ 
+                  background: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 15px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <button 
+              onClick={() => onNavigate('login')}
+              style={{ 
+                background: 'transparent',
+                color: 'white',
+                border: '1px solid white',
+                padding: '8px 15px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                marginRight: '10px'
+              }}
+            >
+              Login
+            </button>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+// Main App component wrapper with AuthProvider
+const AppWithAuth = () => {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
+  );
+};
+
+// Main App component
+const MainApp = () => {
+  const { isAuthenticated } = useAuth();
+  const [page, setPage] = useState(isAuthenticated ? 'products' : 'login');
+  const [showRegister, setShowRegister] = useState(false);
   const [status, setStatus] = useState('Loading...');
+
+  // Check backend connection
+  React.useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const response = await fetch(api.defaults.baseURL);
+        const data = await response.text();
+        setStatus(data || 'Connected to backend!');
+      } catch (error) {
+        setStatus('Error connecting to backend: ' + error.message);
+      }
+    };
+
+    checkBackend();
+  }, []);
+
+  // Render content based on current page
+  const renderContent = () => {
+    if (!isAuthenticated) {
+      return showRegister ? (
+        <Register onToggleForm={() => setShowRegister(false)} />
+      ) : (
+        <Login onToggleForm={() => setShowRegister(true)} />
+      );
+    }
+
+    switch (page) {
+      case 'products':
+        return <ProductManagement />;
+      case 'checkout':
+        return <Checkout />;
+      case 'dashboard':
+        return <Dashboard />;
+      default:
+        return <ProductManagement />;
+    }
+  };
+
+  return (
+    <div>
+      <Navigation onNavigate={setPage} currentPage={page} />
+      
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {renderContent()}
+      </div>
+      
+      <footer style={{ 
+        textAlign: 'center', 
+        padding: '20px', 
+        marginTop: '40px', 
+        borderTop: '1px solid #eee',
+        color: '#777'
+      }}>
+        <div>Junior Joy POS System</div>
+        <div style={{ fontSize: '12px', marginTop: '5px' }}>
+          Backend Status: {status}
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+// Product Management Component
+const ProductManagement = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,18 +201,6 @@ function App() {
   const [editingProduct, setEditingProduct] = useState(null);
 
   useEffect(() => {
-    // Test connection to backend
-    const fetchBackendStatus = async () => {
-      try {
-        const response = await fetch(api.defaults.baseURL);
-        const data = await response.text();
-        setStatus(data || 'Connected to backend!');
-      } catch (error) {
-        setStatus('Error connecting to backend: ' + error.message);
-      }
-    };
-
-    fetchBackendStatus();
     fetchProducts();
   }, []);
 
@@ -118,24 +291,9 @@ function App() {
   };
 
   return (
-    <div style={{ 
-      fontFamily: 'Arial, sans-serif',
-      maxWidth: '1000px',
-      margin: '0 auto',
-      padding: '20px'
-    }}>
-      <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1>Junior Joy POS</h1>
-        <div style={{
-          background: '#f5f5f5',
-          borderRadius: '8px',
-          padding: '10px',
-          marginTop: '10px'
-        }}>
-          <p><strong>Backend Status:</strong> {status}</p>
-        </div>
-      </header>
-
+    <div>
+      <h2>Product Management</h2>
+      
       {error && (
         <div style={{ 
           background: '#ffebee', 
@@ -151,7 +309,7 @@ function App() {
       <div style={{ display: 'flex', gap: '20px' }}>
         {/* Product List */}
         <div style={{ flex: '2' }}>
-          <h2>Products</h2>
+          <h3>Products</h3>
           {loading ? (
             <p>Loading products...</p>
           ) : products.length === 0 ? (
@@ -214,7 +372,7 @@ function App() {
 
         {/* Add/Edit Product Form */}
         <div style={{ flex: '1', background: '#f5f5f5', padding: '20px', borderRadius: '8px' }}>
-          <h2>{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
+          <h3>{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
           <form onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}>
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '5px' }}>Name:</label>
@@ -306,6 +464,6 @@ function App() {
       </div>
     </div>
   );
-}
+};
 
-export default App;
+export default AppWithAuth;
