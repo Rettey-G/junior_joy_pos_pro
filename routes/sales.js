@@ -154,10 +154,11 @@ router.get('/reports/:period', auth, async (req, res) => {
     const now = new Date();
     
     // Set date range based on period
-    if (period === 'daily') {
-      start = new Date(now.setHours(0, 0, 0, 0));
-      end = new Date(now.setHours(23, 59, 59, 999));
-    } else if (period === 'weekly') {
+    if (period === 'day') {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    } else if (period === 'week') {
+      // Get the first day of the week (Sunday)
       const day = now.getDay();
       start = new Date(now);
       start.setDate(now.getDate() - day);
@@ -165,13 +166,24 @@ router.get('/reports/:period', auth, async (req, res) => {
       end = new Date(now);
       end.setDate(start.getDate() + 6);
       end.setHours(23, 59, 59, 999);
-    } else if (period === 'monthly') {
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
-      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    } else if (period === 'month') {
+      // Get the first day of the month
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      // Get the last day of the month
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    } else if (period === 'year') {
+      // Get the first day of the year
+      start = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+      // Get the last day of the year
+      end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
     } else if (period === 'custom' && startDate && endDate) {
-      start = new Date(startDate);
-      end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
+      try {
+        start = new Date(startDate);
+        end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+      } catch (err) {
+        return res.status(400).json({ message: 'Invalid date format for custom period' });
+      }
     } else {
       return res.status(400).json({ message: 'Invalid period or missing dates for custom period' });
     }

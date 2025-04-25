@@ -4,11 +4,11 @@ import './styles.css';
 // If you want graphs, you can use a library like chart.js or recharts. Here we use a placeholder.
 
 const periods = [
-  { value: 'day', label: 'Day' },
-  { value: 'week', label: 'Week' },
-  { value: 'month', label: 'Month' },
-  { value: 'year', label: 'Year' },
-  { value: 'custom', label: 'Custom' }
+  { value: 'day', label: 'Today' },
+  { value: 'week', label: 'This Week' },
+  { value: 'month', label: 'This Month' },
+  { value: 'year', label: 'This Year' },
+  { value: 'custom', label: 'Custom Range' }
 ];
 
 const SalesReports = () => {
@@ -39,10 +39,23 @@ const SalesReports = () => {
         data = await getSalesReport(period);
       }
       
-      setReport(data.data);
+      // Check if data exists and has the expected structure
+      if (data && data.data) {
+        setReport(data.data);
+      } else {
+        // Handle empty response
+        setReport({
+          period: period,
+          sales: [],
+          summary: { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
+          productSales: []
+        });
+      }
     } catch (err) {
       console.error('Error fetching report:', err);
       setError('Failed to fetch report: ' + (err.response?.data?.message || err.message));
+      // Set empty report on error
+      setReport(null);
     }
     setLoading(false);
   };
