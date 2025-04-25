@@ -26,11 +26,43 @@ const Dashboard = () => {
         } else {
           response = await getSalesReport(reportPeriod);
         }
-        setReportData(response.data);
+        
+        // Process the data to ensure all values are of the correct type
+        if (response && response.data) {
+          // Safely process the data
+          const processedData = {
+            ...response.data,
+            // Ensure summary values are numbers
+            summary: response.data.summary ? {
+              totalSales: Number(response.data.summary.totalSales || 0),
+              totalRevenue: Number(response.data.summary.totalRevenue || 0),
+              averageOrderValue: Number(response.data.summary.averageOrderValue || 0)
+            } : { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
+            // Ensure sales is an array
+            sales: Array.isArray(response.data.sales) ? response.data.sales : [],
+            // Ensure productSales is an array
+            productSales: Array.isArray(response.data.productSales) ? response.data.productSales : []
+          };
+          setReportData(processedData);
+        } else {
+          // Set default empty data structure
+          setReportData({
+            summary: { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
+            sales: [],
+            productSales: []
+          });
+        }
+        
         setError(null);
       } catch (err) {
         setError('Error fetching report: ' + err.message);
         console.error('Error fetching report:', err);
+        // Set default empty data structure on error
+        setReportData({
+          summary: { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
+          sales: [],
+          productSales: []
+        });
       } finally {
         setLoading(false);
       }

@@ -163,7 +163,26 @@ const Sales = () => {
       const response = await api.post('/api/sales', saleData);
       
       // Update completed sale state
-      setCompletedSale(response.data);
+      if (response && response.data) {
+        // Make sure all numeric fields are actually numbers
+        const processedSale = {
+          ...response.data,
+          subtotal: Number(response.data.subtotal || 0),
+          gst: Number(response.data.gst || 0),
+          serviceCharge: Number(response.data.serviceCharge || 0),
+          discount: Number(response.data.discount || 0),
+          total: Number(response.data.total || 0),
+          amountPaid: Number(response.data.amountPaid || 0),
+          change: Number(response.data.change || 0),
+          // Ensure customer is a string
+          customer: String(response.data.customer || ''),
+          // Ensure cashier is a string
+          cashier: String(response.data.cashier || ''),
+          // Ensure products is an array
+          products: Array.isArray(response.data.products) ? response.data.products : []
+        };
+        setCompletedSale(processedSale);
+      }
       
       // Show bill
       setShowBill(true);
@@ -190,299 +209,114 @@ const Sales = () => {
   if (error) return <div className="text-center mt-4 text-danger">{error}</div>;
 
   return (
-    <div className="sales-container">
-      <h2 className="mb-4">New Sale</h2>
+    <div className="sales-container" style={{flexDirection: 'column', gap: '32px', maxWidth: 1200, margin: '0 auto', padding: '24px 8px'}}>
+      <h2 className="mb-4" style={{marginBottom: 32, color: '#1976d2'}}>New Sale</h2>
+      <div className="card" style={{marginBottom: 32}}>
+        <div className="card-body" style={{display: 'flex', flexDirection: 'column', gap: 24}}>
+          <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+            <label className="form-label">Customer Name</label>
+            <input className="form-control" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Enter customer name..." required />
+          </div>
+          <div style={{display: 'flex', flexWrap: 'wrap', gap: 16}}>
+            <div style={{flex: 2, minWidth: 200}}>
+              <label className="form-label">Search Products</label>
+              <input className="form-control" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by name, code, or category..." />
+              <div className="product-grid" style={{marginTop: 16}}>
+                {filteredProducts.slice(0, 10).map(product => (
+                  <div className="product-card" key={product._id} onClick={() => addToCart(product)} style={{marginBottom: 8}}>
+                    <div className="product-name">{product.name}</div>
+                    <div className="product-category">{product.category}</div>
+                    <div className="product-price">MVR {product.price.toFixed(2)}</div>
+                  </div>
+                ))}
+                {filteredProducts.length === 0 && <div style={{color: '#888', padding: '8px 0'}}>No products found.</div>}
+              </div>
+            </div>
+            <div style={{flex: 1, minWidth: 260}}>
+              <label className="form-label">Cart</label>
+              <div className="cart-section" style={{background: '#f9fbfd', borderRadius: 8, boxShadow: '0 1px 4px rgba(33,150,243,0.07)', padding: 12}}>
+                {cart.length === 0 ? (
+                  <div className="cart-empty">Cart is empty</div>
+                ) : (
+                  cart.map(item => (
+                    <div className="cart-item" key={item._id}>
+                      <div style={{flex: 1}}>{item.name}</div>
+                      <div className="quantity-control">
+                        <button className="quantity-button" onClick={() => updateQuantity(item._id, item.quantity - 1)}>-</button>
+                        <span className="quantity-value">{item.quantity}</span>
+                        <button className="quantity-button" onClick={() => updateQuantity(item._id, item.quantity + 1)}>+</button>
+                      </div>
+                      <div style={{width: 60, textAlign: 'right'}}>MVR {(item.price * item.quantity).toFixed(2)}</div>
+                      <button className="btn btn-danger btn-sm" style={{marginLeft: 8}} onClick={() => removeFromCart(item._id)}>Remove</button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+          <div style={{display: 'flex', flexWrap: 'wrap', gap: 16}}>
+            <div style={{flex: 1, minWidth: 180}}>
+              <label className="form-label">Discount (%)</label>
+              <input className="form-control" type="number" min={0} max={100} value={discount} onChange={e => setDiscount(Number(e.target.value))} />
+            </div>
+            <div style={{flex: 1, minWidth: 180}}>
+              <label className="form-label">Amount Paid</label>
+              <input className="form-control" type="number" min={0} value={amountPaid} onChange={e => setAmountPaid(e.target.value)} />
+            </div>
+          </div>
+          <div className="cart-totals" style={{marginTop: 16}}>
+            <div className="total-row"><span>Subtotal:</span> <span>MVR {calculateSubtotal().toFixed(2)}</span></div>
+            <div className="total-row"><span>GST (16%):</span> <span>MVR {calculateGST().toFixed(2)}</span></div>
+            <div className="total-row"><span>Service Charge (10%):</span> <span>MVR {calculateServiceCharge().toFixed(2)}</span></div>
+            <div className="total-row"><span>Discount:</span> <span>- MVR {calculateDiscount().toFixed(2)}</span></div>
+            <div className="total-row grand-total"><span>Total:</span> <span>MVR {calculateTotal().toFixed(2)}</span></div>
+            <div className="total-row"><span>Change:</span> <span>MVR {calculateChange().toFixed(2)}</span></div>
+          </div>
+          <button className="btn btn-primary" style={{marginTop: 16, minWidth: 160}} onClick={handleCheckout}>Complete Sale & Generate Bill</button>
+        </div>
+      </div>
       
       {/* Bill View (shows when checkout is complete) */}
       {showBill && completedSale && (
-        <div className="bill-container">
-          <div className="bill-header">
-            <h2>Junior Joy POS</h2>
-            <h3>Sales Receipt</h3>
-            <p>Bill #: {completedSale.billNumber}</p>
-            <p>Date: {new Date(completedSale.createdAt).toLocaleString()}</p>
+        <div className="bill-container" style={{marginTop: 32, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(33,150,243,0.08)', padding: 24, maxWidth: 600, margin: '32px auto'}}>
+          <div className="bill-header" style={{marginBottom: 24}}>
+            <h2 style={{color: '#1976d2'}}>Junior Joy POS</h2>
+            <div style={{fontSize: '1.1rem', marginTop: 8}}>Bill No: {completedSale.billNumber}</div>
+            <div style={{fontSize: '1.1rem'}}>Customer: {completedSale.customer}</div>
+            <div style={{fontSize: '1.1rem'}}>Cashier: {completedSale.cashier}</div>
           </div>
-          
-          <div className="bill-info">
-            <p><strong>Customer:</strong> {completedSale.customer}</p>
-            <p><strong>Cashier:</strong> {completedSale.cashier}</p>
-          </div>
-          
-          <div className="bill-items">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th style={{ textAlign: 'right' }}>Price</th>
-                  <th style={{ textAlign: 'right' }}>Qty</th>
-                  <th style={{ textAlign: 'right' }}>Total</th>
+          <table className="table" style={{marginBottom: 24}}>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {completedSale.products.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{item.name}</td>
+                  <td>{item.quantity}</td>
+                  <td>MVR {item.price.toFixed(2)}</td>
+                  <td>MVR {(item.price * item.quantity).toFixed(2)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {completedSale.products.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.name}</td>
-                    <td style={{ textAlign: 'right' }}>MVR {item.price.toFixed(2)}</td>
-                    <td style={{ textAlign: 'right' }}>{item.quantity}</td>
-                    <td style={{ textAlign: 'right' }}>MVR {(item.price * item.quantity).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="bill-totals">
-            <div className="total-row">
-              <span>Subtotal:</span>
-              <span>MVR {completedSale.subtotal.toFixed(2)}</span>
-            </div>
-            <div className="total-row">
-              <span>GST (16%):</span>
-              <span>MVR {completedSale.gst.toFixed(2)}</span>
-            </div>
-            <div className="total-row">
-              <span>Service Charge (10%):</span>
-              <span>MVR {completedSale.serviceCharge.toFixed(2)}</span>
-            </div>
-            {completedSale.discount > 0 && (
-              <div className="total-row">
-                <span>Discount:</span>
-                <span>MVR {completedSale.discount.toFixed(2)}</span>
-              </div>
-            )}
-            <div className="total-row grand-total">
-              <span>Total:</span>
-              <span>MVR {completedSale.total.toFixed(2)}</span>
-            </div>
-            <div className="total-row">
-              <span>Amount Paid:</span>
-              <span>MVR {completedSale.amountPaid.toFixed(2)}</span>
-            </div>
-            <div className="total-row">
-              <span>Change:</span>
-              <span>MVR {completedSale.change.toFixed(2)}</span>
-            </div>
-          </div>
-          
-          <div className="bill-footer">
-            <p>Thank you for your business!</p>
-          </div>
-          
-          <div className="bill-actions">
-            <button 
-              onClick={printBill}
-              className="btn btn-success"
-            >
-              Print Receipt
-            </button>
-            <button 
-              onClick={() => setShowBill(false)}
-              className="btn btn-primary"
-            >
-              New Sale
-            </button>
-          </div>
-        </div>
-      )}
-      
-      {!showBill && (
-        <div className="sales-container">
-          {/* Product Selection */}
-          <div className="products-section">
-            <h3>Products</h3>
-            
-            {/* Search Bar */}
-            <div className="search-container">
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search products by name, code, or category..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            {/* Product Grid */}
-            <div className="product-grid">
-              {filteredProducts.map(product => (
-                <div 
-                  key={product._id} 
-                  onClick={() => addToCart(product)}
-                  className="product-card"
-                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
-                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <div className="product-name">{product.name}</div>
-                  <div className="product-category">Code: {product.code}</div>
-                  <div className="product-price">MVR {product.price.toFixed(2)}</div>
-                  <div className={`product-stock ${product.SOH > 10 ? 'stock-available' : product.SOH > 0 ? 'stock-low' : 'stock-out'}`}>
-                    Stock: {product.SOH}
-                  </div>
-                </div>
               ))}
-            </div>
+            </tbody>
+          </table>
+          <div className="cart-totals">
+            <div className="total-row"><span>Subtotal:</span> <span>MVR {completedSale.subtotal.toFixed(2)}</span></div>
+            <div className="total-row"><span>GST:</span> <span>MVR {completedSale.gst.toFixed(2)}</span></div>
+            <div className="total-row"><span>Service Charge:</span> <span>MVR {completedSale.serviceCharge.toFixed(2)}</span></div>
+            <div className="total-row"><span>Discount:</span> <span>- MVR {completedSale.discount.toFixed(2)}</span></div>
+            <div className="total-row grand-total"><span>Total:</span> <span>MVR {completedSale.total.toFixed(2)}</span></div>
+            <div className="total-row"><span>Paid:</span> <span>MVR {completedSale.amountPaid.toFixed(2)}</span></div>
+            <div className="total-row"><span>Change:</span> <span>MVR {completedSale.change.toFixed(2)}</span></div>
           </div>
-          
-          {/* Cart and Checkout */}
-          <div className="cart-section">
-            <h3>Cart</h3>
-            
-            {/* Customer Information */}
-            <div className="mb-4">
-              <div className="form-group">
-                <label className="form-label">Customer Name:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Enter customer name"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Bill Number:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={billNumber}
-                  readOnly
-                  style={{ backgroundColor: '#f5f5f5' }}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Discount (%):</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  min="0"
-                  max="100"
-                  value={discount}
-                  onChange={(e) => setDiscount(Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))}
-                />
-              </div>
-            </div>
-            
-            {/* Cart Items */}
-            {cart.length === 0 ? (
-              <p className="cart-empty">No items in cart. Click on products to add them.</p>
-            ) : (
-              <div className="table-container">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th style={{ textAlign: 'right' }}>Price</th>
-                      <th style={{ textAlign: 'center' }}>Qty</th>
-                      <th style={{ textAlign: 'right' }}>Total</th>
-                      <th style={{ textAlign: 'center' }}>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cart.map(item => (
-                      <tr key={item._id}>
-                        <td>{item.name}</td>
-                        <td style={{ textAlign: 'right' }}>MVR {item.price.toFixed(2)}</td>
-                        <td style={{ textAlign: 'center' }}>
-                          <div className="quantity-control">
-                            <button 
-                              onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                              className="quantity-button"
-                            >
-                              -
-                            </button>
-                            <span className="quantity-value">{item.quantity}</span>
-                            <button 
-                              onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                              className="quantity-button"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </td>
-                        <td style={{ textAlign: 'right' }}>MVR {(item.price * item.quantity).toFixed(2)}</td>
-                        <td style={{ textAlign: 'center' }}>
-                          <button 
-                            onClick={() => removeFromCart(item._id)}
-                            className="btn btn-sm btn-danger"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            
-            {/* Totals and Checkout */}
-            {cart.length > 0 && (
-              <div>
-                <div style={{ marginLeft: 'auto', width: '250px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <span>Subtotal:</span>
-                    <span>MVR {calculateSubtotal().toFixed(2)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <span>GST (16%):</span>
-                    <span>MVR {calculateGST().toFixed(2)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <span>Service Charge (10%):</span>
-                    <span>MVR {calculateServiceCharge().toFixed(2)}</span>
-                  </div>
-                  {discount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                      <span>Discount ({discount}%):</span>
-                      <span>MVR {calculateDiscount().toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontWeight: 'bold', borderTop: '1px solid #ddd', paddingTop: '5px' }}>
-                    <span>Total:</span>
-                    <span>MVR {calculateTotal().toFixed(2)}</span>
-                  </div>
-                  
-                  <div style={{ marginTop: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Amount Paid:</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={amountPaid}
-                      onChange={(e) => setAmountPaid(e.target.value)}
-                      style={{ width: '100%', padding: '8px' }}
-                      placeholder="Enter amount paid"
-                    />
-                  </div>
-                  
-                  {parseFloat(amountPaid) >= calculateTotal() && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontWeight: 'bold', color: '#4CAF50' }}>
-                      <span>Change:</span>
-                      <span>MVR {calculateChange().toFixed(2)}</span>
-                    </div>
-                  )}
-                </div>
-                
-                <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                  <button 
-                    onClick={handleCheckout}
-                    disabled={cart.length === 0 || !customerName.trim() || parseFloat(amountPaid) < calculateTotal()}
-                    style={{ 
-                      background: '#4CAF50',
-                      color: 'white',
-                      border: 'none',
-                      padding: '10px 20px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      opacity: (cart.length === 0 || !customerName.trim() || parseFloat(amountPaid) < calculateTotal()) ? 0.5 : 1
-                    }}
-                  >
-                    Complete Sale
-                  </button>
-                </div>
-              </div>
-            )}
+          <div style={{display: 'flex', justifyContent: 'center', gap: 16, marginTop: 24}}>
+            <button className="btn btn-primary" style={{minWidth: 160}} onClick={printBill}>Print Bill</button>
+            <button className="btn btn-secondary" style={{minWidth: 160}} onClick={() => setShowBill(false)}>New Sale</button>
           </div>
         </div>
       )}
