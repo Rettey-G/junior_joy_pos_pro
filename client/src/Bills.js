@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getSales, updateSaleStatus } from './api';
+import { getSales, updateSale } from './api';
 import './styles.css';
 
 const Bills = () => {
@@ -46,8 +46,20 @@ const Bills = () => {
         price: Number(line.price),
         quantity: Number(line.quantity)
       }));
-      // Assume PATCH /api/sales/:id accepts full products array
-      await updateSaleStatus(bill._id, { products: updatedProducts });
+      // Calculate new total based on updated products
+      const subtotal = updatedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const gst = subtotal * 0.16;
+      const serviceCharge = subtotal * 0.1;
+      const total = subtotal + gst + serviceCharge - (bill.discount || 0);
+      
+      // Update the bill with new products and totals
+      await updateSale(bill._id, { 
+        products: updatedProducts,
+        subtotal,
+        gst,
+        serviceCharge,
+        total
+      });
       setEditingBillId(null);
       setEditLines([]);
       fetchBills();

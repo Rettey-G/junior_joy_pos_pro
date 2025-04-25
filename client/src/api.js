@@ -29,13 +29,21 @@ export const deleteProduct = (id) => api.delete(`/api/products/${id}`);
 export const createSale = (saleData) => api.post('/api/sales', saleData);
 export const getSales = (page = 1, limit = 10) => api.get(`/api/sales?page=${page}&limit=${limit}`);
 export const getSale = (id) => api.get(`/api/sales/${id}`);
+export const updateSale = (id, saleData) => api.patch(`/api/sales/${id}`, saleData);
 export const updateSaleStatus = (id, status) => api.patch(`/api/sales/${id}/status`, { status });
 export const getSalesReport = (period, startDate, endDate) => {
   let url = `/api/sales/reports/${period}`;
-  if (period === 'custom') {
+  if (period === 'custom' && startDate && endDate) {
     url += `?startDate=${startDate}&endDate=${endDate}`;
   }
   return api.get(url);
 };
+
+// Employee API functions
+export const getEmployees = () => api.get('/api/employees');
+export const getEmployee = (id) => api.get(`/api/employees/${id}`);
+export const createEmployee = (employeeData) => api.post('/api/employees', employeeData);
+export const updateEmployee = (id, employeeData) => api.patch(`/api/employees/${id}`, employeeData);
+export const deleteEmployee = (id) => api.delete(`/api/employees/${id}`);
 
 export default api;

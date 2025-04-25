@@ -216,7 +216,8 @@ router.get('/reports/:period', auth, async (req, res) => {
         totalRevenue,
         averageOrderValue: totalSales > 0 ? totalRevenue / totalSales : 0
       },
-      productSales
+      productSales,
+      sales: sales // Include the actual sales data for the frontend
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getSalesReport } from './api';
+import { getSalesReport, getSales } from './api';
 import './styles.css';
 // If you want graphs, you can use a library like chart.js or recharts. Here we use a placeholder.
 
@@ -38,9 +38,11 @@ const SalesReports = () => {
       } else {
         data = await getSalesReport(period);
       }
+      
       setReport(data.data);
     } catch (err) {
-      setError('Failed to fetch report');
+      console.error('Error fetching report:', err);
+      setError('Failed to fetch report: ' + (err.response?.data?.message || err.message));
     }
     setLoading(false);
   };

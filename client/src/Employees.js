@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from './api';
+import { getEmployees, createEmployee, updateEmployee } from './api';
 import './styles.css';
 
 const Employees = () => {
@@ -18,7 +18,7 @@ const Employees = () => {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/api/employees');
+      const res = await getEmployees();
       setEmployees(res.data || []);
       setLoading(false);
     } catch (err) {
@@ -39,7 +39,7 @@ const Employees = () => {
   const handleSave = async (id) => {
     setSaving(true);
     try {
-      await api.patch(`/api/employees/${id}`, editData);
+      await updateEmployee(id, editData);
       setEditingId(null);
       fetchEmployees();
     } catch (err) {
@@ -51,7 +51,7 @@ const Employees = () => {
   const handleAdd = async () => {
     setSaving(true);
     try {
-      await api.post('/api/employees', newEmployee);
+      await createEmployee(newEmployee);
       setNewEmployee({ name: '', salary: '' });
       fetchEmployees();
     } catch (err) {
