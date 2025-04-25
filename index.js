@@ -5,17 +5,25 @@ const connectDB = require('./db');
 const productRoutes = require('./routes/products');
 const authRoutes = require('./routes/auth');
 const salesRoutes = require('./routes/sales');
+const employeesRoutes = require('./routes/employees');
 const { auth } = require('./middleware/auth');
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: ['https://junoirjoypospro.netlify.app', 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// CORS configuration - allow all origins for development
+app.use(cors());
+
+// Additional CORS headers for all requests
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).json({});
+  }
+  next();
+});
+
 app.use(express.json());
 
 // Database connection
@@ -25,6 +33,7 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/sales', salesRoutes);
+app.use('/api/employees', employeesRoutes);
 
 // Test route
 app.get('/', (req, res) => {
