@@ -1,10 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL:
-    process.env.NODE_ENV === 'development'
-      ? 'http://localhost:5000' // Local development
-      : 'https://your-render-app.onrender.com' // Your Render URL in production
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000'
 });
 
 // Add auth token to requests
