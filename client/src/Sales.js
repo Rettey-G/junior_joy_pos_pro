@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext.js';
 import api from './api';
+import './styles.css';
 
 const Sales = () => {
   const { user } = useAuth();
@@ -185,116 +186,98 @@ const Sales = () => {
     window.print();
   };
 
-  if (loading) return <div>Loading products...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <div className="text-center mt-4">Loading products...</div>;
+  if (error) return <div className="text-center mt-4 text-danger">{error}</div>;
 
   return (
-    <div>
-      <h2>New Sale</h2>
+    <div className="sales-container">
+      <h2 className="mb-4">New Sale</h2>
       
       {/* Bill View (shows when checkout is complete) */}
       {showBill && completedSale && (
-        <div className="bill-container" style={{ 
-          border: '1px solid #ddd', 
-          padding: '20px',
-          marginBottom: '20px',
-          backgroundColor: '#f9f9f9'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <div className="bill-container">
+          <div className="bill-header">
             <h2>Junior Joy POS</h2>
             <h3>Sales Receipt</h3>
             <p>Bill #: {completedSale.billNumber}</p>
             <p>Date: {new Date(completedSale.createdAt).toLocaleString()}</p>
           </div>
           
-          <div style={{ marginBottom: '20px' }}>
+          <div className="bill-info">
             <p><strong>Customer:</strong> {completedSale.customer}</p>
             <p><strong>Cashier:</strong> {completedSale.cashier}</p>
           </div>
           
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #ddd' }}>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Item</th>
-                <th style={{ textAlign: 'right', padding: '8px' }}>Price</th>
-                <th style={{ textAlign: 'right', padding: '8px' }}>Qty</th>
-                <th style={{ textAlign: 'right', padding: '8px' }}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {completedSale.products.map((item, index) => (
-                <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '8px' }}>{item.name}</td>
-                  <td style={{ textAlign: 'right', padding: '8px' }}>MVR {item.price.toFixed(2)}</td>
-                  <td style={{ textAlign: 'right', padding: '8px' }}>{item.quantity}</td>
-                  <td style={{ textAlign: 'right', padding: '8px' }}>MVR {(item.price * item.quantity).toFixed(2)}</td>
+          <div className="bill-items">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th style={{ textAlign: 'right' }}>Price</th>
+                  <th style={{ textAlign: 'right' }}>Qty</th>
+                  <th style={{ textAlign: 'right' }}>Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {completedSale.products.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.name}</td>
+                    <td style={{ textAlign: 'right' }}>MVR {item.price.toFixed(2)}</td>
+                    <td style={{ textAlign: 'right' }}>{item.quantity}</td>
+                    <td style={{ textAlign: 'right' }}>MVR {(item.price * item.quantity).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           
-          <div style={{ marginLeft: 'auto', width: '250px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+          <div className="bill-totals">
+            <div className="total-row">
               <span>Subtotal:</span>
               <span>MVR {completedSale.subtotal.toFixed(2)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+            <div className="total-row">
               <span>GST (16%):</span>
               <span>MVR {completedSale.gst.toFixed(2)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+            <div className="total-row">
               <span>Service Charge (10%):</span>
               <span>MVR {completedSale.serviceCharge.toFixed(2)}</span>
             </div>
             {completedSale.discount > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+              <div className="total-row">
                 <span>Discount:</span>
                 <span>MVR {completedSale.discount.toFixed(2)}</span>
               </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontWeight: 'bold', borderTop: '1px solid #ddd', paddingTop: '5px' }}>
+            <div className="total-row grand-total">
               <span>Total:</span>
               <span>MVR {completedSale.total.toFixed(2)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+            <div className="total-row">
               <span>Amount Paid:</span>
               <span>MVR {completedSale.amountPaid.toFixed(2)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+            <div className="total-row">
               <span>Change:</span>
               <span>MVR {completedSale.change.toFixed(2)}</span>
             </div>
           </div>
           
-          <div style={{ textAlign: 'center', marginTop: '30px' }}>
+          <div className="bill-footer">
             <p>Thank you for your business!</p>
           </div>
           
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <div className="bill-actions">
             <button 
               onClick={printBill}
-              style={{ 
-                background: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginRight: '10px'
-              }}
+              className="btn btn-success"
             >
               Print Receipt
             </button>
             <button 
               onClick={() => setShowBill(false)}
-              style={{ 
-                background: '#2196f3',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              className="btn btn-primary"
             >
               New Sale
             </button>
@@ -303,47 +286,36 @@ const Sales = () => {
       )}
       
       {!showBill && (
-        <div style={{ display: 'flex', gap: '20px' }}>
+        <div className="sales-container">
           {/* Product Selection */}
-          <div style={{ flex: '1' }}>
+          <div className="products-section">
             <h3>Products</h3>
             
             {/* Search Bar */}
-            <div style={{ marginBottom: '20px' }}>
+            <div className="search-container">
               <input
                 type="text"
+                className="search-input"
                 placeholder="Search products by name, code, or category..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ width: '100%', padding: '8px', fontSize: '16px' }}
               />
             </div>
             
             {/* Product Grid */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: '15px'
-            }}>
+            <div className="product-grid">
               {filteredProducts.map(product => (
                 <div 
                   key={product._id} 
                   onClick={() => addToCart(product)}
-                  style={{ 
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    padding: '10px',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
-                    backgroundColor: 'white'
-                  }}
+                  className="product-card"
                   onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
                   onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  <div style={{ fontWeight: 'bold' }}>{product.name}</div>
-                  <div style={{ color: '#666', fontSize: '0.9em' }}>Code: {product.code}</div>
-                  <div style={{ marginTop: '5px' }}>MVR {product.price.toFixed(2)}</div>
-                  <div style={{ color: product.SOH > 0 ? '#4CAF50' : '#f44336', fontSize: '0.9em' }}>
+                  <div className="product-name">{product.name}</div>
+                  <div className="product-category">Code: {product.code}</div>
+                  <div className="product-price">MVR {product.price.toFixed(2)}</div>
+                  <div className={`product-stock ${product.SOH > 10 ? 'stock-available' : product.SOH > 0 ? 'stock-low' : 'stock-out'}`}>
                     Stock: {product.SOH}
                   </div>
                 </div>
@@ -352,113 +324,97 @@ const Sales = () => {
           </div>
           
           {/* Cart and Checkout */}
-          <div style={{ flex: '1', borderLeft: '1px solid #eee', paddingLeft: '20px' }}>
+          <div className="cart-section">
             <h3>Cart</h3>
             
             {/* Customer Information */}
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px' }}>Customer Name:</label>
+            <div className="mb-4">
+              <div className="form-group">
+                <label className="form-label">Customer Name:</label>
                 <input
                   type="text"
+                  className="form-control"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  style={{ width: '100%', padding: '8px' }}
                   placeholder="Enter customer name"
                 />
               </div>
               
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px' }}>Bill Number:</label>
+              <div className="form-group">
+                <label className="form-label">Bill Number:</label>
                 <input
                   type="text"
+                  className="form-control"
                   value={billNumber}
                   readOnly
-                  style={{ width: '100%', padding: '8px', backgroundColor: '#f5f5f5' }}
+                  style={{ backgroundColor: '#f5f5f5' }}
                 />
               </div>
               
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px' }}>Discount (%):</label>
+              <div className="form-group">
+                <label className="form-label">Discount (%):</label>
                 <input
                   type="number"
+                  className="form-control"
                   min="0"
                   max="100"
                   value={discount}
                   onChange={(e) => setDiscount(Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))}
-                  style={{ width: '100%', padding: '8px' }}
                 />
               </div>
             </div>
             
             {/* Cart Items */}
             {cart.length === 0 ? (
-              <p>No items in cart. Click on products to add them.</p>
+              <p className="cart-empty">No items in cart. Click on products to add them.</p>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #ddd' }}>
-                    <th style={{ textAlign: 'left', padding: '8px' }}>Item</th>
-                    <th style={{ textAlign: 'right', padding: '8px' }}>Price</th>
-                    <th style={{ textAlign: 'center', padding: '8px' }}>Qty</th>
-                    <th style={{ textAlign: 'right', padding: '8px' }}>Total</th>
-                    <th style={{ textAlign: 'center', padding: '8px' }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cart.map(item => (
-                    <tr key={item._id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '8px' }}>{item.name}</td>
-                      <td style={{ textAlign: 'right', padding: '8px' }}>MVR {item.price.toFixed(2)}</td>
-                      <td style={{ textAlign: 'center', padding: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <button 
-                            onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                            style={{ 
-                              background: '#f1f1f1',
-                              border: 'none',
-                              width: '25px',
-                              height: '25px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            -
-                          </button>
-                          <span style={{ margin: '0 10px' }}>{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                            style={{ 
-                              background: '#f1f1f1',
-                              border: 'none',
-                              width: '25px',
-                              height: '25px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '8px' }}>MVR {(item.price * item.quantity).toFixed(2)}</td>
-                      <td style={{ textAlign: 'center', padding: '8px' }}>
-                        <button 
-                          onClick={() => removeFromCart(item._id)}
-                          style={{ 
-                            background: '#f44336',
-                            color: 'white',
-                            border: 'none',
-                            padding: '5px 10px',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </td>
+              <div className="table-container">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th style={{ textAlign: 'right' }}>Price</th>
+                      <th style={{ textAlign: 'center' }}>Qty</th>
+                      <th style={{ textAlign: 'right' }}>Total</th>
+                      <th style={{ textAlign: 'center' }}>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {cart.map(item => (
+                      <tr key={item._id}>
+                        <td>{item.name}</td>
+                        <td style={{ textAlign: 'right' }}>MVR {item.price.toFixed(2)}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <div className="quantity-control">
+                            <button 
+                              onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                              className="quantity-button"
+                            >
+                              -
+                            </button>
+                            <span className="quantity-value">{item.quantity}</span>
+                            <button 
+                              onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                              className="quantity-button"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>MVR {(item.price * item.quantity).toFixed(2)}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <button 
+                            onClick={() => removeFromCart(item._id)}
+                            className="btn btn-sm btn-danger"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
             
             {/* Totals and Checkout */}

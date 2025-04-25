@@ -6,95 +6,52 @@ import Checkout from './Checkout.js';
 import Dashboard from './Dashboard.js';
 import Sales from './Sales.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
+import './styles.css';
 
 // Navigation component
 const Navigation = ({ onNavigate, currentPage }) => {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
   
   return (
-    <nav style={{ 
-      background: '#2196f3', 
-      padding: '10px 20px',
-      color: 'white',
-      marginBottom: '20px'
-    }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <div style={{ fontWeight: 'bold', fontSize: '20px' }}>
+    <nav className="navbar">
+      <div className="container navbar-container">
+        <div className="navbar-brand">
           Junior Joy POS
         </div>
         
         {isAuthenticated ? (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ marginRight: '20px' }}>
+          <div className="d-flex align-items-center">
+            <div className="navbar-welcome">
               Welcome, {user.name} ({user.role})
             </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div className="navbar-nav">
               <button 
                 onClick={() => onNavigate('products')}
-                style={{ 
-                  background: currentPage === 'products' ? 'white' : 'transparent',
-                  color: currentPage === 'products' ? '#2196f3' : 'white',
-                  border: 'none',
-                  padding: '8px 15px',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className={`nav-button ${currentPage === 'products' ? 'active' : ''}`}
               >
                 Products
               </button>
               <button 
                 onClick={() => onNavigate('sales')}
-                style={{ 
-                  background: currentPage === 'sales' ? 'white' : 'transparent',
-                  color: currentPage === 'sales' ? '#2196f3' : 'white',
-                  border: 'none',
-                  padding: '8px 15px',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className={`nav-button ${currentPage === 'sales' ? 'active' : ''}`}
               >
                 New Sale
               </button>
               <button 
                 onClick={() => onNavigate('checkout')}
-                style={{ 
-                  background: currentPage === 'checkout' ? 'white' : 'transparent',
-                  color: currentPage === 'checkout' ? '#2196f3' : 'white',
-                  border: 'none',
-                  padding: '8px 15px',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className={`nav-button ${currentPage === 'checkout' ? 'active' : ''}`}
               >
                 Checkout
               </button>
               <button 
                 onClick={() => onNavigate('dashboard')}
-                style={{ 
-                  background: currentPage === 'dashboard' ? 'white' : 'transparent',
-                  color: currentPage === 'dashboard' ? '#2196f3' : 'white',
-                  border: 'none',
-                  padding: '8px 15px',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className={`nav-button ${currentPage === 'dashboard' ? 'active' : ''}`}
               >
                 Dashboard
               </button>
               <button 
                 onClick={logout}
-                style={{ 
-                  background: '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 15px',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className="nav-button logout-button"
               >
                 Logout
               </button>
@@ -104,15 +61,7 @@ const Navigation = ({ onNavigate, currentPage }) => {
           <div>
             <button 
               onClick={() => onNavigate('login')}
-              style={{ 
-                background: 'transparent',
-                color: 'white',
-                border: '1px solid white',
-                padding: '8px 15px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginRight: '10px'
-              }}
+              className="nav-button"
             >
               Login
             </button>
@@ -182,19 +131,13 @@ const MainApp = () => {
     <div>
       <Navigation onNavigate={setPage} currentPage={page} />
       
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="container">
         {renderContent()}
       </div>
       
-      <footer style={{ 
-        textAlign: 'center', 
-        padding: '20px', 
-        marginTop: '40px', 
-        borderTop: '1px solid #eee',
-        color: '#777'
-      }}>
+      <footer className="footer">
         <div>Junior Joy POS System</div>
-        <div style={{ fontSize: '12px', marginTop: '5px' }}>
+        <div className="backend-status">
           Backend Status: {status}
         </div>
       </footer>
@@ -305,233 +248,260 @@ const ProductManagement = () => {
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  if (loading) return <div>Loading products...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <div className="text-center mt-4">Loading products...</div>;
+  if (error) return <div className="text-center mt-4 text-danger">{error}</div>;
 
   return (
-    <div>
+    <div className="product-management">
       <h2>Product Management</h2>
       
       {/* Search Bar */}
-      <div style={{ marginBottom: '20px' }}>
+      <div className="search-container">
         <input
           type="text"
+          className="search-input"
           placeholder="Search products by name, code, or category..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setCurrentPage(1); // Reset to first page on search
           }}
-          style={{ width: '100%', padding: '8px', fontSize: '16px' }}
         />
       </div>
       
       {/* Create Product Form */}
-      <div>
-        <h3>Add New Product</h3>
-        <form onSubmit={handleCreateProduct}>
-          <div>
-            <label>Code:</label>
-            <input
-              type="text"
-              value={newProduct.code}
-              onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
-              required
-            />
-          </div>
-          <div>
-            <label>Name:</label>
-            <input
-              type="text"
-              value={newProduct.name}
-              onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-              required
-            />
-          </div>
-          <div>
-            <label>Price (MVR):</label>
-            <input
-              type="number"
-              value={newProduct.price}
-              onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-              required
-            />
-          </div>
-          <div>
-            <label>Category:</label>
-            <input
-              type="text"
-              value={newProduct.category}
-              onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-              required
-            />
-          </div>
-          <div>
-            <label>Details:</label>
-            <textarea
-              value={newProduct.details}
-              onChange={(e) => setNewProduct({...newProduct, details: e.target.value})}
-            />
-          </div>
-          <div>
-            <label>Specs:</label>
-            <textarea
-              value={newProduct.specs}
-              onChange={(e) => setNewProduct({...newProduct, specs: e.target.value})}
-            />
-          </div>
-          <div>
-            <label>Image URL:</label>
-            <input
-              type="text"
-              value={newProduct.imageUrl}
-              onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
-            />
-          </div>
-          <div>
-            <label>Stock on Hand:</label>
-            <input
-              type="number"
-              value={newProduct.SOH}
-              onChange={(e) => setNewProduct({...newProduct, SOH: e.target.value})}
-              required
-            />
-          </div>
-          <button type="submit">Add Product</button>
-        </form>
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">Add New Product</h3>
+        </div>
+        <div className="card-body">
+          <form onSubmit={handleCreateProduct}>
+            <div className="form-group">
+              <label className="form-label">Code:</label>
+              <input
+                type="text"
+                className="form-control"
+                value={newProduct.code}
+                onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Name:</label>
+              <input
+                type="text"
+                className="form-control"
+                value={newProduct.name}
+                onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Price (MVR):</label>
+              <input
+                type="number"
+                className="form-control"
+                value={newProduct.price}
+                onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Category:</label>
+              <input
+                type="text"
+                className="form-control"
+                value={newProduct.category}
+                onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Details:</label>
+              <textarea
+                className="form-control"
+                value={newProduct.details}
+                onChange={(e) => setNewProduct({...newProduct, details: e.target.value})}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Specs:</label>
+              <textarea
+                className="form-control"
+                value={newProduct.specs}
+                onChange={(e) => setNewProduct({...newProduct, specs: e.target.value})}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Image URL:</label>
+              <input
+                type="text"
+                className="form-control"
+                value={newProduct.imageUrl}
+                onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Stock on Hand:</label>
+              <input
+                type="number"
+                className="form-control"
+                value={newProduct.SOH}
+                onChange={(e) => setNewProduct({...newProduct, SOH: e.target.value})}
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">Add Product</button>
+          </form>
+        </div>
       </div>
 
       {/* Edit Product Form */}
       {editingProduct && (
-        <div>
-          <h3>Edit Product</h3>
-          <form onSubmit={handleUpdateProduct}>
-            <div>
-              <label>Code:</label>
-              <input
-                type="text"
-                value={editingProduct.code}
-                onChange={(e) => setEditingProduct({...editingProduct, code: e.target.value})}
-                required
-              />
-            </div>
-            <div>
-              <label>Name:</label>
-              <input
-                type="text"
-                value={editingProduct.name}
-                onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})}
-                required
-              />
-            </div>
-            <div>
-              <label>Price (MVR):</label>
-              <input
-                type="number"
-                value={editingProduct.price}
-                onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})}
-                required
-              />
-            </div>
-            <div>
-              <label>Category:</label>
-              <input
-                type="text"
-                value={editingProduct.category}
-                onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
-                required
-              />
-            </div>
-            <div>
-              <label>Details:</label>
-              <textarea
-                value={editingProduct.details}
-                onChange={(e) => setEditingProduct({...editingProduct, details: e.target.value})}
-              />
-            </div>
-            <div>
-              <label>Specs:</label>
-              <textarea
-                value={editingProduct.specs}
-                onChange={(e) => setEditingProduct({...editingProduct, specs: e.target.value})}
-              />
-            </div>
-            <div>
-              <label>Image URL:</label>
-              <input
-                type="text"
-                value={editingProduct.imageUrl}
-                onChange={(e) => setEditingProduct({...editingProduct, imageUrl: e.target.value})}
-              />
-            </div>
-            <div>
-              <label>Stock on Hand:</label>
-              <input
-                type="number"
-                value={editingProduct.SOH}
-                onChange={(e) => setEditingProduct({...editingProduct, SOH: e.target.value})}
-                required
-              />
-            </div>
-            <button type="submit">Update Product</button>
-            <button type="button" onClick={() => setEditingProduct(null)}>Cancel</button>
-          </form>
+        <div className="card mt-4">
+          <div className="card-header">
+            <h3 className="card-title">Edit Product</h3>
+          </div>
+          <div className="card-body">
+            <form onSubmit={handleUpdateProduct}>
+              <div className="form-group">
+                <label className="form-label">Code:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingProduct.code}
+                  onChange={(e) => setEditingProduct({...editingProduct, code: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Name:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingProduct.name}
+                  onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Price (MVR):</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={editingProduct.price}
+                  onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Category:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingProduct.category}
+                  onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Details:</label>
+                <textarea
+                  className="form-control"
+                  value={editingProduct.details}
+                  onChange={(e) => setEditingProduct({...editingProduct, details: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Specs:</label>
+                <textarea
+                  className="form-control"
+                  value={editingProduct.specs}
+                  onChange={(e) => setEditingProduct({...editingProduct, specs: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Image URL:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={editingProduct.imageUrl}
+                  onChange={(e) => setEditingProduct({...editingProduct, imageUrl: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Stock on Hand:</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={editingProduct.SOH}
+                  onChange={(e) => setEditingProduct({...editingProduct, SOH: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="d-flex gap-2">
+                <button type="submit" className="btn btn-success">Update Product</button>
+                <button type="button" className="btn btn-danger" onClick={() => setEditingProduct(null)}>Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
       {/* Product List */}
-      <div>
-        <h3>Product List</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th>Price (MVR)</th>
-              <th>Category</th>
-              <th>SOH</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map(product => (
-              <tr key={product._id}>
-                <td>{product.code}</td>
-                <td>{product.name}</td>
-                <td>{product.price.toFixed(2)}</td>
-                <td>{product.category}</td>
-                <td>{product.SOH}</td>
-                <td>
-                  <button onClick={() => setEditingProduct(product)}>Edit</button>
-                  <button onClick={() => handleDeleteProduct(product._id)}>Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        
-        {/* Pagination */}
-        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button 
-              key={i + 1} 
-              onClick={() => paginate(i + 1)}
-              style={{
-                margin: '0 5px',
-                padding: '5px 10px',
-                backgroundColor: currentPage === i + 1 ? '#4CAF50' : '#f1f1f1',
-                color: currentPage === i + 1 ? 'white' : 'black',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              {i + 1}
-            </button>
-          ))}
+      <div className="card mt-4">
+        <div className="card-header">
+          <h3 className="card-title">Product List</h3>
         </div>
-        
-        <div style={{ marginTop: '10px', textAlign: 'center' }}>
-          Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredProducts.length)} of {filteredProducts.length} products
+        <div className="card-body">
+          <div className="table-container">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Price (MVR)</th>
+                  <th>Category</th>
+                  <th>SOH</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.map(product => (
+                  <tr key={product._id}>
+                    <td>{product.code}</td>
+                    <td>{product.name}</td>
+                    <td>{product.price.toFixed(2)}</td>
+                    <td>{product.category}</td>
+                    <td className={product.SOH > 10 ? 'stock-available' : product.SOH > 0 ? 'stock-low' : 'stock-out'}>
+                      {product.SOH}
+                    </td>
+                    <td className="actions">
+                      <button className="btn btn-sm btn-primary" onClick={() => setEditingProduct(product)}>Edit</button>
+                      <button className="btn btn-sm btn-danger" onClick={() => handleDeleteProduct(product._id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Pagination */}
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button 
+                key={i + 1} 
+                onClick={() => paginate(i + 1)}
+                className={`pagination-button ${currentPage === i + 1 ? 'active' : ''}`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          
+          <div className="pagination-info">
+            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredProducts.length)} of {filteredProducts.length} products
+          </div>
         </div>
       </div>
     </div>
