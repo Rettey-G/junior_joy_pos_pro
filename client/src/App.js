@@ -16,6 +16,23 @@ import api, { getProducts, createProduct, updateProduct, deleteProduct } from '.
 import { safeRender } from './utils';
 import './styles.css';
 
+// Training Page Component
+const TrainingPage = () => {
+  useEffect(() => {
+    // Redirect to the training.html page in the public directory
+    window.location.href = '/training.html';
+  }, []);
+
+  return (
+    <div className="loading-container">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading training page...</span>
+      </div>
+      <p className="mt-3">Loading training resources...</p>
+    </div>
+  );
+};
+
 // Navigation component
 const Navigation = ({ onNavigate, currentPage }) => {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
@@ -40,6 +57,7 @@ const Navigation = ({ onNavigate, currentPage }) => {
     { id: 'reports', label: 'Sales Reports' },
     { id: 'invoices', label: 'Invoices' },
     { id: 'dashboard', label: 'Dashboard' },
+    { id: 'training', label: 'Training' },
   ];
   
   // If user is admin, add Users page
@@ -195,6 +213,8 @@ const MainApp = () => {
         return <Dashboard isAuthenticated={isAuthenticated} />;
       case 'users':
         return <Users isAuthenticated={isAuthenticated} />;
+      case 'training':
+        return <TrainingPage />;
       default:
         return <ProductManagement />;
     }
