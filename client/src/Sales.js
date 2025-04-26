@@ -324,15 +324,47 @@ const Sales = () => {
             <div style={{flex: 2, minWidth: 200}}>
               <label className="form-label">Search Products</label>
               <input className="form-control" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by name, code, or category..." />
-              <div className="product-grid" style={{marginTop: 16}}>
-                {filteredProducts.slice(0, 10).map(product => (
-                  <div className="product-card" key={product._id} onClick={() => addToCart(product)} style={{marginBottom: 8}}>
-                    <div className="product-name">{product.name}</div>
-                    <div className="product-category">{product.category}</div>
-                    <div className="product-price">MVR {product.price.toFixed(2)}</div>
+              <div className="row mt-4">
+                <div className="col-md-8">
+                  <div className="card">
+                    <div className="card-header bg-primary text-white">
+                      <h5 className="mb-0">Products</h5>
+                    </div>
+                    <div className="card-body">
+                      <div className="form-group mb-3">
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Search products..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+                      
+                      {loading ? (
+                        <div className="text-center">
+                          <div className="spinner-border" role="status">
+                            <span className="sr-only">Loading...</span>
+                          </div>
+                        </div>
+                      ) : error ? (
+                        <div className="alert alert-danger">{error}</div>
+                      ) : filteredProducts.length === 0 ? (
+                        <div className="alert alert-info">No products found</div>
+                      ) : (
+                        <div className="product-grid" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                          {filteredProducts.map(product => (
+                            <div key={product._id} className="product-card" onClick={() => addToCart(product)}>
+                              <div className="product-name">{product.name}</div>
+                              <div className="product-price">{formatCurrency(product.price)}</div>
+                              <div className="product-stock">Stock: {product.stock}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ))}
-                {filteredProducts.length === 0 && <div style={{color: '#888', padding: '8px 0'}}>No products found.</div>}
+                </div>
               </div>
             </div>
             <div style={{flex: 1, minWidth: 260}}>

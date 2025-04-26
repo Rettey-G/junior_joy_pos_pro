@@ -1030,69 +1030,72 @@ textarea.form-control {
   /* General print settings */
   @page {
     size: auto;
-    margin: 10mm 10mm 10mm 10mm;
+    margin: 5mm;
   }
   
-  /* Hide everything by default */
-  body * {
+  /* Reset all elements */
+  * {
     visibility: hidden;
-    display: none;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
-  /* Only show the invoice/bill being printed */
-  .bill-container, .invoice-page, .bill-container *, .invoice-page * {
+  /* Only show what we want to print */
+  .bill-view, .invoice-page, .bill-container {
     visibility: visible !important;
-    display: block !important;
-  }
-  
-  /* Position the bill at the top of the page */
-  .bill-container, .invoice-page {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     height: auto;
-    page-break-after: avoid;
-    page-break-inside: avoid;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 10px !important;
-    box-shadow: none !important;
   }
   
-  /* Adjust font sizes for better fit */
-  .bill-container h2, .invoice-page h2 {
-    font-size: 18px !important;
+  /* Make all children visible */
+  .bill-view *, .invoice-page *, .bill-container * {
+    visibility: visible !important;
   }
   
-  .bill-container p, .invoice-page p {
-    font-size: 12px !important;
-  }
-  
-  /* Make table more compact */
-  .bill-container table, .invoice-page table {
-    font-size: 11px !important;
+  /* Ensure tables display properly */
+  .bill-view table, .invoice-page table, .bill-container table {
     width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  
+  .bill-view table th, .invoice-page table th, .bill-container table th,
+  .bill-view table td, .invoice-page table td, .bill-container table td {
+    padding: 3px !important;
+    text-align: left !important;
+    font-size: 10px !important;
+  }
+  
+  /* Adjust font sizes */
+  .bill-view h1, .invoice-page h1, .bill-container h1 { font-size: 18px !important; }
+  .bill-view h2, .invoice-page h2, .bill-container h2 { font-size: 16px !important; }
+  .bill-view h3, .invoice-page h3, .bill-container h3 { font-size: 14px !important; }
+  .bill-view p, .invoice-page p, .bill-container p { font-size: 10px !important; }
+  
+  /* Hide buttons and inputs */
+  button, .btn, input, select, .no-print {
+    display: none !important;
+  }
+  
+  /* Hide navigation and other elements */
+  .navbar, .footer, .sidebar, nav, header, footer {
+    display: none !important;
   }
   
   /* Ensure proper page breaks */
-  tr, td, th, div, p, h1, h2, h3, h4, h5, h6 {
-    page-break-inside: avoid;
+  .bill-view, .invoice-page, .bill-container {
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
   }
   
-  /* Force background colors to print */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-  
-  /* Hide all buttons when printing */
-  button, .btn, input, select {
-    display: none !important;
-  }
   body * {
     visibility: hidden;
   }
+}
   
   .bill-container,
   .bill-container * {

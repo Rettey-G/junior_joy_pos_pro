@@ -38,11 +38,21 @@ export const getSale = (id) => api.get(`/api/sales/${id}`);
 export const updateSale = (id, saleData) => api.patch(`/api/sales/${id}`, saleData);
 export const updateSaleStatus = (id, status) => api.patch(`/api/sales/${id}/status`, { status });
 export const deleteSale = (id) => api.delete(`/api/sales/${id}`);
-export const getSalesReport = (period, startDate, endDate) => {
+export const getSalesReport = (period, startDate, endDate, timestamp) => {
   let url = `/api/sales/reports/${period}`;
+  let hasParams = false;
+  
+  // Add date parameters for custom period
   if (period === 'custom' && startDate && endDate) {
     url += `?startDate=${startDate}&endDate=${endDate}`;
+    hasParams = true;
   }
+  
+  // Add timestamp to bypass cache
+  if (timestamp) {
+    url += hasParams ? `&t=${timestamp}` : `?t=${timestamp}`;
+  }
+  
   return api.get(url);
 };
 

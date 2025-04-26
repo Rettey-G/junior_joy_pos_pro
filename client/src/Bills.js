@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getSales, updateSale, deleteSale } from './api';
 import { safeRender, formatCurrency } from './utils';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import './styles.css';
 
 const Bills = () => {
@@ -45,6 +47,18 @@ const Bills = () => {
     ));
   };
 
+  // State for editing bill details
+  const [editBillDetails, setEditBillDetails] = useState({
+    discount: 0,
+    gst: 0,
+    serviceCharge: 0,
+    customer: '',
+    notes: ''
+  });
+
+  // State for viewing a bill (for printing)
+  const [viewingBill, setViewingBill] = useState(null);
+
   const handleSave = async (bill) => {
     setSaving(true);
     setError(null);
@@ -69,9 +83,12 @@ const Bills = () => {
       
       // Calculate new total based on updated products
       const subtotal = updatedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const gst = subtotal * 0.16;
-      const serviceCharge = subtotal * 0.1;
-      const total = subtotal + gst + serviceCharge - (bill.discount || 0);
+      
+      // Use the edited values or calculate defaults
+      const gst = editBillDetails.gst !== undefined ? Number(editBillDetails.gst) : subtotal * 0.16;
+      const serviceCharge = editBillDetails.serviceCharge !== undefined ? Number(editBillDetails.serviceCharge) : subtotal * 0.1;
+      const discount = editBillDetails.discount !== undefined ? Number(editBillDetails.discount) : (bill.discount || 0);
+      const total = subtotal + gst + serviceCharge - discount;
       
       // Update the bill with new products and totals
       await updateSale(bill._id, { 
@@ -79,11 +96,21 @@ const Bills = () => {
         subtotal,
         gst,
         serviceCharge,
-        total
+        discount,
+        total,
+        customer: editBillDetails.customer || bill.customer,
+        notes: editBillDetails.notes || bill.notes
       });
       
       setEditingBillId(null);
       setEditLines([]);
+      setEditBillDetails({
+        discount: 0,
+        gst: 0,
+        serviceCharge: 0,
+        customer: '',
+        notes: ''
+      });
       fetchBills();
     } catch (err) {
       console.error('Error saving bill:', err);
@@ -174,9 +201,69 @@ const Bills = () => {
                               <td>
                                 <input type="number" min={0} value={line.price} onChange={e => handleLineChange(idx, 'price', e.target.value)} style={{width: 80}} />
                               </td>
-                              <td>MVR {(line.price * line.quantity).toFixed(2)}</td>
+                              <td>{formatCurrency(line.quantity * line.price)}</td>
                             </tr>
                           ))}
+                          <tr>
+                            <td colSpan="4">
+                              <div className="mt-3">
+                                <div className="form-group row">
+                                  <label className="col-sm-4 col-form-label">Discount:</label>
+                                  <div className="col-sm-8">
+                                    <input 
+                                      type="number" 
+                                      className="form-control" 
+                                      value={editBillDetails.discount || bill.discount || 0} 
+                                      onChange={(e) => setEditBillDetails({...editBillDetails, discount: Number(e.target.value)})} 
+                                    />
+                                  </div>
+                                </div>
+                                <div className="form-group row">
+                                  <label className="col-sm-4 col-form-label">GST (16%):</label>
+                                  <div className="col-sm-8">
+                                    <input 
+                                      type="number" 
+                                      className="form-control" 
+                                      value={editBillDetails.gst || bill.gst || 0} 
+                                      onChange={(e) => setEditBillDetails({...editBillDetails, gst: Number(e.target.value)})} 
+                                    />
+                                  </div>
+                                </div>
+                                <div className="form-group row">
+                                  <label className="col-sm-4 col-form-label">Service Charge (10%):</label>
+                                  <div className="col-sm-8">
+                                    <input 
+                                      type="number" 
+                                      className="form-control" 
+                                      value={editBillDetails.serviceCharge || bill.serviceCharge || 0} 
+                                      onChange={(e) => setEditBillDetails({...editBillDetails, serviceCharge: Number(e.target.value)})} 
+                                    />
+                                  </div>
+                                </div>
+                                <div className="form-group row">
+                                  <label className="col-sm-4 col-form-label">Customer:</label>
+                                  <div className="col-sm-8">
+                                    <input 
+                                      type="text" 
+                                      className="form-control" 
+                                      value={editBillDetails.customer || (typeof bill.customer === 'object' ? bill.customer.name : bill.customer) || ''} 
+                                      onChange={(e) => setEditBillDetails({...editBillDetails, customer: e.target.value})} 
+                                    />
+                                  </div>
+                                </div>
+                                <div className="form-group row">
+                                  <label className="col-sm-4 col-form-label">Notes:</label>
+                                  <div className="col-sm-8">
+                                    <textarea 
+                                      className="form-control" 
+                                      value={editBillDetails.notes || bill.notes || ''} 
+                                      onChange={(e) => setEditBillDetails({...editBillDetails, notes: e.target.value})} 
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
                         </tbody>
                       </table>
                     ) : (
@@ -196,8 +283,9 @@ const Bills = () => {
                       </>
                     ) : (
                       <div style={{display: 'flex', gap: '8px'}}>
-                        <button className="btn btn-primary btn-sm" onClick={() => handleEdit(bill)}>Edit</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(bill._id)}>Delete</button>
+                        <button className="btn btn-sm btn-info mr-2" onClick={() => handleEdit(bill)}>Edit</button>
+                        <button className="btn btn-sm btn-primary mr-2" onClick={() => setViewingBill(bill)}>View Bill</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(bill._id)}>Delete</button>
                       </div>
                     )}
                   </td>
@@ -205,6 +293,207 @@ const Bills = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Bill View Modal */}
+      {viewingBill && (
+        <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Bill #{viewingBill.billNumber}</h5>
+                <button type="button" className="close" onClick={() => setViewingBill(null)}>
+                  <span>&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="bill-view" id="bill-to-print">
+                  <div className="text-center mb-4">
+                    <img 
+                      src="https://i.imgur.com/8bGJQem.png" 
+                      alt="Junior Joy Logo" 
+                      style={{ height: '70px', marginBottom: '10px' }} 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';            
+                      }}
+                    />
+                    <h2>Junior Joy POS</h2>
+                    <p>Professional Point of Sale System</p>
+                  </div>
+                  
+                  <div className="row mb-3">
+                    <div className="col-6">
+                      <p><strong>Bill #:</strong> {viewingBill.billNumber}</p>
+                      <p><strong>Date:</strong> {new Date(viewingBill.createdAt).toLocaleString()}</p>
+                    </div>
+                    <div className="col-6 text-right">
+                      <p><strong>Customer:</strong> {typeof viewingBill.customer === 'object' ? 
+                        safeRender(viewingBill.customer.name) : 
+                        safeRender(viewingBill.customer)}</p>
+                      <p><strong>Cashier:</strong> {typeof viewingBill.cashier === 'object' ? 
+                        safeRender(viewingBill.cashier.name) : 
+                        safeRender(viewingBill.cashier)}</p>
+                    </div>
+                  </div>
+                  
+                  <table className="table table-bordered">
+                    <thead className="thead-light">
+                      <tr>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {viewingBill.products.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{item.name}</td>
+                          <td>{item.quantity}</td>
+                          <td>{formatCurrency(item.price)}</td>
+                          <td>{formatCurrency(item.price * item.quantity)}</td>
+                        </tr>
+                      ))}
+                      <tr>
+                        <td colSpan="3" className="text-right"><strong>Subtotal:</strong></td>
+                        <td>{formatCurrency(viewingBill.subtotal || 0)}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3" className="text-right"><strong>GST (16%):</strong></td>
+                        <td>{formatCurrency(viewingBill.gst || 0)}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3" className="text-right"><strong>Service Charge (10%):</strong></td>
+                        <td>{formatCurrency(viewingBill.serviceCharge || 0)}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3" className="text-right"><strong>Discount:</strong></td>
+                        <td>{formatCurrency(viewingBill.discount || 0)}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3" className="text-right"><strong>Total:</strong></td>
+                        <td><strong>{formatCurrency(viewingBill.total || 0)}</strong></td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3" className="text-right"><strong>Amount Paid:</strong></td>
+                        <td>{formatCurrency(viewingBill.amountPaid || 0)}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3" className="text-right"><strong>Change:</strong></td>
+                        <td>{formatCurrency(viewingBill.change || 0)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  
+                  <div className="text-center mt-4">
+                    <p>Thank you for your business!</p>
+                    <p>{viewingBill.notes}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => setViewingBill(null)}
+                >
+                  Close
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-success" 
+                  onClick={() => {
+                    const doc = new jsPDF();
+                    
+                    // Add logo and header
+                    doc.setFontSize(20);
+                    doc.setTextColor(25, 118, 210);
+                    doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text('Professional Point of Sale System', 105, 28, { align: 'center' });
+                    
+                    // Add bill details
+                    doc.setFontSize(14);
+                    doc.text('BILL', 105, 40, { align: 'center' });
+                    
+                    doc.setFontSize(10);
+                    doc.text(`Bill #: ${viewingBill.billNumber}`, 20, 50);
+                    doc.text(`Date: ${new Date(viewingBill.createdAt).toLocaleString()}`, 20, 55);
+                    doc.text(`Customer: ${typeof viewingBill.customer === 'object' ? viewingBill.customer.name : viewingBill.customer}`, 20, 60);
+                    doc.text(`Cashier: ${typeof viewingBill.cashier === 'object' ? viewingBill.cashier.name : viewingBill.cashier}`, 20, 65);
+                    
+                    // Add products table
+                    const tableColumn = ["Item", "Qty", "Price", "Total"];
+                    const tableRows = [];
+                    
+                    viewingBill.products.forEach(item => {
+                      const itemData = [
+                        item.name,
+                        item.quantity,
+                        formatCurrency(item.price),
+                        formatCurrency(item.price * item.quantity)
+                      ];
+                      tableRows.push(itemData);
+                    });
+                    
+                    doc.autoTable({
+                      head: [tableColumn],
+                      body: tableRows,
+                      startY: 70,
+                      theme: 'grid',
+                      styles: { fontSize: 9 },
+                      headStyles: { fillColor: [25, 118, 210] }
+                    });
+                    
+                    // Add totals
+                    const finalY = doc.lastAutoTable.finalY + 10;
+                    
+                    doc.text(`Subtotal:`, 130, finalY);
+                    doc.text(formatCurrency(viewingBill.subtotal || 0), 170, finalY, { align: 'right' });
+                    
+                    doc.text(`GST (16%):`, 130, finalY + 5);
+                    doc.text(formatCurrency(viewingBill.gst || 0), 170, finalY + 5, { align: 'right' });
+                    
+                    doc.text(`Service Charge (10%):`, 130, finalY + 10);
+                    doc.text(formatCurrency(viewingBill.serviceCharge || 0), 170, finalY + 10, { align: 'right' });
+                    
+                    doc.text(`Discount:`, 130, finalY + 15);
+                    doc.text(formatCurrency(viewingBill.discount || 0), 170, finalY + 15, { align: 'right' });
+                    
+                    doc.setFontSize(12);
+                    doc.text(`Total:`, 130, finalY + 22);
+                    doc.text(formatCurrency(viewingBill.total || 0), 170, finalY + 22, { align: 'right' });
+                    
+                    doc.setFontSize(10);
+                    doc.text(`Amount Paid:`, 130, finalY + 30);
+                    doc.text(formatCurrency(viewingBill.amountPaid || 0), 170, finalY + 30, { align: 'right' });
+                    
+                    doc.text(`Change:`, 130, finalY + 35);
+                    doc.text(formatCurrency(viewingBill.change || 0), 170, finalY + 35, { align: 'right' });
+                    
+                    // Add footer
+                    doc.setFontSize(8);
+                    doc.text('Thank you for your business!', 105, finalY + 45, { align: 'center' });
+                    
+                    // Save the PDF
+                    doc.save(`Bill-${viewingBill.billNumber}.pdf`);
+                  }}
+                >
+                  Save as PDF
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary" 
+                  onClick={() => window.print()}
+                >
+                  Print
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

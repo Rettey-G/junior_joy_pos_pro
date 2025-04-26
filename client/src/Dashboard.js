@@ -43,7 +43,9 @@ const Dashboard = () => {
         } else {
           // Use a try-catch block specifically for the API call
           try {
-            response = await getSalesReport(reportPeriod);
+            // Force cache bypass by adding a timestamp parameter
+            const timestamp = new Date().getTime();
+            response = await getSalesReport(reportPeriod, null, null, timestamp);
           } catch (apiError) {
             console.error('API Error:', apiError);
             // Create a fallback response with empty data
