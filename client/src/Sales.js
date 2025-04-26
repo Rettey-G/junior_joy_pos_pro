@@ -311,17 +311,18 @@ const Sales = () => {
       doc.text(`Change:`, 130, finalY + 35);
       doc.text(`MVR ${completedSale.change.toFixed(2)}`, 170, finalY + 35, { align: 'right' });
       
+      // Add footer
+      doc.setFontSize(10);
+      doc.text('Thank you for your business!', 105, finalY + 50, { align: 'center' });
+      doc.setFontSize(8);
+      doc.text('Please keep this invoice for your records.', 105, finalY + 55, { align: 'center' });
+      
       // Save the PDF with a proper filename
       doc.save(`Bill-${completedSale.billNumber}-${new Date().getTime()}.pdf`);
-    
-    // Add footer
-    doc.setFontSize(10);
-    doc.text('Thank you for your business!', 105, finalY + 50, { align: 'center' });
-    doc.setFontSize(8);
-    doc.text('Please keep this invoice for your records.', 105, finalY + 55, { align: 'center' });
-    
-    // Save the PDF
-    doc.save(`Invoice-${completedSale.billNumber}.pdf`);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
   if (loading) return <div className="text-center mt-4">Loading products...</div>;
