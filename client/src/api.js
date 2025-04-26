@@ -39,7 +39,14 @@ export const updateSale = (id, saleData) => api.patch(`/api/sales/${id}`, saleDa
 export const updateSaleStatus = (id, status) => api.patch(`/api/sales/${id}/status`, { status });
 export const deleteSale = (id) => api.delete(`/api/sales/${id}`);
 export const getSalesReport = (period, startDate, endDate, timestamp) => {
-  let url = `/api/sales/reports/${period}`;
+  // Map client-side period names to server-side period names if needed
+  let serverPeriod = period;
+  if (period === 'daily') serverPeriod = 'daily';
+  if (period === 'weekly') serverPeriod = 'weekly';
+  if (period === 'monthly') serverPeriod = 'monthly';
+  if (period === 'yearly') serverPeriod = 'yearly';
+  
+  let url = `/api/sales/reports/${serverPeriod}`;
   let hasParams = false;
   
   // Add date parameters for custom period

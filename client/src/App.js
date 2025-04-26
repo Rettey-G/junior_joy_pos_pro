@@ -374,90 +374,105 @@ const ProductManagement = () => {
       {/* Add Product Modal */}
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal-card" onClick={e => e.stopPropagation()}>
+          <div className="modal-card landscape-modal" onClick={e => e.stopPropagation()}>
             <div className="card-header">
               <h3 className="card-title">Add New Product</h3>
+              <button 
+                type="button" 
+                className="close-button" 
+                onClick={() => setShowAddModal(false)}
+              >
+                &times;
+              </button>
             </div>
             <div className="card-body">
               <form onSubmit={e => { handleCreateProduct(e); setShowAddModal(false); }}>
-                <div className="form-group">
-                  <label className="form-label">Code:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={newProduct.code}
-                    onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
-                    required
-                  />
+                <div className="form-row">
+                  <div className="form-column">
+                    <div className="form-group">
+                      <label className="form-label">Code:</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProduct.code}
+                        onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Name:</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProduct.name}
+                        onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Price (MVR):</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={newProduct.price}
+                        onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Category:</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProduct.category}
+                        onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-column">
+                    <div className="form-group">
+                      <label className="form-label">Details:</label>
+                      <textarea
+                        className="form-control"
+                        rows="3"
+                        value={newProduct.details}
+                        onChange={(e) => setNewProduct({...newProduct, details: e.target.value})}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Specs:</label>
+                      <textarea
+                        className="form-control"
+                        rows="3"
+                        value={newProduct.specs}
+                        onChange={(e) => setNewProduct({...newProduct, specs: e.target.value})}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Image URL:</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProduct.imageUrl}
+                        onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Stock on Hand:</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={newProduct.SOH}
+                        onChange={(e) => setNewProduct({...newProduct, SOH: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Name:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Price (MVR):</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Category:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={newProduct.category}
-                    onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Details:</label>
-                  <textarea
-                    className="form-control"
-                    value={newProduct.details}
-                    onChange={(e) => setNewProduct({...newProduct, details: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Specs:</label>
-                  <textarea
-                    className="form-control"
-                    value={newProduct.specs}
-                    onChange={(e) => setNewProduct({...newProduct, specs: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Image URL:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={newProduct.imageUrl}
-                    onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Stock on Hand:</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={newProduct.SOH}
-                    onChange={(e) => setNewProduct({...newProduct, SOH: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="d-flex gap-2">
+                <div className="form-actions">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
                   <button type="submit" className="btn btn-primary">Add Product</button>
-                  <button type="button" className="btn btn-danger" onClick={() => setShowAddModal(false)}>Cancel</button>
                 </div>
               </form>
             </div>

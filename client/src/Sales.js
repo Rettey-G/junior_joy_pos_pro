@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext.js';
 import api from './api';
 import { safeRender, formatCurrency } from './utils';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import './styles.css';
 
@@ -218,6 +218,127 @@ const Sales = () => {
     } catch (err) {
       setError('Failed to process checkout: ' + (err.response?.data?.message || err.message));
     }
+  };
+
+  // Open bill in a new window
+  const openBillInNewWindow = () => {
+    if (!completedSale) return;
+    
+    const newWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!newWindow) {
+      alert('Please allow popups for this site to view the bill in a new window.');
+      return;
+    }
+    
+    // Create bill content
+    const billContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Bill #${completedSale.billNumber}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .bill-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+          .bill-header { text-align: center; margin-bottom: 20px; }
+          .bill-header h2 { color: #1976d2; margin: 0; }
+          .bill-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          .bill-info-item { margin-bottom: 10px; }
+          .bill-info-label { font-weight: bold; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+          th { background-color: #f2f2f2; }
+          .totals { margin-left: auto; width: 250px; }
+          .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+          .grand-total { font-weight: bold; font-size: 1.1em; border-top: 1px solid #ddd; padding-top: 5px; }
+          .footer { text-align: center; margin-top: 30px; }
+          .actions { text-align: center; margin-top: 30px; }
+          .btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; border-radius: 4px; border: none; }
+          .btn-primary { background-color: #1976d2; color: white; }
+          .btn-success { background-color: #4caf50; color: white; }
+          @media print { .actions { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="bill-container">
+          <div class="bill-header">
+            <h2>Junior Joy POS</h2>
+            <p>Professional Point of Sale System</p>
+            <h3>INVOICE</h3>
+            <p>Bill No: ${completedSale.billNumber}</p>
+            <p>Date: ${new Date(completedSale.createdAt || Date.now()).toLocaleString()}</p>
+          </div>
+          
+          <div class="bill-info">
+            <div class="bill-info-item">
+              <div class="bill-info-label">Customer:</div>
+              <div>${safeRender(completedSale.customer)}</div>
+            </div>
+            <div class="bill-info-item">
+              <div class="bill-info-label">Cashier:</div>
+              <div>${safeRender(completedSale.cashier)}</div>
+            </div>
+          </div>
+          
+          <div class="bill-info-item">
+            <div class="bill-info-label">Payment Method:</div>
+            <div>${safeRender(completedSale.paymentMethod || 'Cash')}</div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${completedSale.products.map(item => `
+                <tr>
+                  <td>${safeRender(item.name)}</td>
+                  <td>${item.quantity}</td>
+                  <td>MVR ${Number(item.price).toFixed(2)}</td>
+                  <td>MVR ${(Number(item.price) * Number(item.quantity)).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="totals">
+            <div class="total-row"><span>Subtotal:</span> <span>MVR ${completedSale.subtotal.toFixed(2)}</span></div>
+            <div class="total-row"><span>GST:</span> <span>MVR ${completedSale.gst.toFixed(2)}</span></div>
+            <div class="total-row"><span>Service Charge:</span> <span>MVR ${completedSale.serviceCharge.toFixed(2)}</span></div>
+            <div class="total-row"><span>Discount:</span> <span>- MVR ${completedSale.discount.toFixed(2)}</span></div>
+            <div class="total-row grand-total"><span>Total:</span> <span>MVR ${completedSale.total.toFixed(2)}</span></div>
+            <div class="total-row"><span>Paid:</span> <span>MVR ${completedSale.amountPaid.toFixed(2)}</span></div>
+            <div class="total-row"><span>Change:</span> <span>MVR ${completedSale.change.toFixed(2)}</span></div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Thank you for your business!</strong></p>
+            <p>Please keep this invoice for your records.</p>
+          </div>
+          
+          <div class="actions">
+            <button class="btn btn-primary" onclick="window.print()">Print Bill</button>
+            <button class="btn btn-success" onclick="window.close()">Close</button>
+          </div>
+        </div>
+        <script>
+          // Auto-print when the window opens
+          window.onload = function() {
+            // Uncomment the line below to automatically print when the window opens
+            // window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+    
+    newWindow.document.open();
+    newWindow.document.write(billContent);
+    newWindow.document.close();
   };
 
   const printBill = () => {
@@ -519,8 +640,8 @@ const Sales = () => {
             <div style={{fontSize: '0.9rem', color: '#666'}}>Please keep this invoice for your records.</div>
           </div>
           <div style={{display: 'flex', justifyContent: 'center', gap: 16, marginTop: 24}}>
-            <button className="btn btn-primary" style={{minWidth: 120}} onClick={printBill}>
-              Print Bill
+            <button className="btn btn-primary" style={{minWidth: 120}} onClick={openBillInNewWindow}>
+              View Bill
             </button>
             <button className="btn btn-success" style={{minWidth: 120}} onClick={generatePDF}>
               Save as PDF

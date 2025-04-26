@@ -232,10 +232,10 @@ router.get('/reports/:period', auth, async (req, res) => {
     const now = new Date();
     
     // Set date range based on period
-    if (period === 'day') {
+    if (period === 'day' || period === 'daily') {
       start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
       end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-    } else if (period === 'week') {
+    } else if (period === 'week' || period === 'weekly') {
       // Get the first day of the week (Sunday)
       const day = now.getDay();
       start = new Date(now);
@@ -244,12 +244,12 @@ router.get('/reports/:period', auth, async (req, res) => {
       end = new Date(now);
       end.setDate(start.getDate() + 6);
       end.setHours(23, 59, 59, 999);
-    } else if (period === 'month') {
+    } else if (period === 'month' || period === 'monthly') {
       // Get the first day of the month
       start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
       // Get the last day of the month
       end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-    } else if (period === 'year') {
+    } else if (period === 'year' || period === 'yearly' || period === 'annual') {
       // Get the first day of the year
       start = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
       // Get the last day of the year

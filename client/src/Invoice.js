@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSales } from './api';
 import { safeRender, formatCurrency } from './utils';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import './styles.css';
 
@@ -96,6 +96,126 @@ const Invoice = () => {
 
   const handleRefresh = () => {
     fetchLatestInvoice();
+  };
+  
+  const openInvoiceInNewWindow = () => {
+    if (!invoice) return;
+    
+    const newWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!newWindow) {
+      alert('Please allow popups for this site to view the invoice in a new window.');
+      return;
+    }
+    
+    // Create invoice content
+    const invoiceContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoice #${inv.billNumber}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .invoice-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+          .invoice-header { text-align: center; margin-bottom: 20px; }
+          .invoice-header h2 { color: #1976d2; margin: 0; }
+          .invoice-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          .invoice-info-item { margin-bottom: 10px; }
+          .invoice-info-label { font-weight: bold; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+          th { background-color: #f2f2f2; }
+          .totals { margin-left: auto; width: 250px; }
+          .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+          .grand-total { font-weight: bold; font-size: 1.1em; border-top: 1px solid #ddd; padding-top: 5px; }
+          .footer { text-align: center; margin-top: 30px; }
+          .actions { text-align: center; margin-top: 30px; }
+          .btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; border-radius: 4px; border: none; }
+          .btn-primary { background-color: #1976d2; color: white; }
+          .btn-success { background-color: #4caf50; color: white; }
+          @media print { .actions { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-container">
+          <div class="invoice-header">
+            <h2>Junior Joy POS</h2>
+            <p>Professional Point of Sale System</p>
+            <h3>INVOICE</h3>
+            <p>Bill No: ${inv.billNumber}</p>
+            <p>Date: ${inv.date}</p>
+          </div>
+          
+          <div class="invoice-info">
+            <div class="invoice-info-item">
+              <div class="invoice-info-label">Customer:</div>
+              <div>${safeRender(inv.customer)}</div>
+            </div>
+            <div class="invoice-info-item">
+              <div class="invoice-info-label">Cashier:</div>
+              <div>${safeRender(inv.cashier)}</div>
+            </div>
+          </div>
+          
+          <div class="invoice-info-item">
+            <div class="invoice-info-label">Payment Method:</div>
+            <div>${inv.paymentMethod || 'Cash'}</div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${inv.items.map(item => `
+                <tr>
+                  <td>${safeRender(item.name || item.product?.name || 'Unknown Item')}</td>
+                  <td>${item.quantity}</td>
+                  <td>${formatCurrency(item.price)}</td>
+                  <td>${formatCurrency(item.price * item.quantity)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="totals">
+            <div class="total-row"><span>Subtotal:</span> <span>${formatCurrency(inv.subtotal)}</span></div>
+            <div class="total-row"><span>GST:</span> <span>${formatCurrency(inv.gst)}</span></div>
+            <div class="total-row"><span>Service Charge:</span> <span>${formatCurrency(inv.serviceCharge)}</span></div>
+            <div class="total-row"><span>Discount:</span> <span>- ${formatCurrency(inv.discount)}</span></div>
+            <div class="total-row grand-total"><span>Total:</span> <span>${formatCurrency(inv.total)}</span></div>
+            <div class="total-row"><span>Paid:</span> <span>${formatCurrency(inv.paid)}</span></div>
+            <div class="total-row"><span>Change:</span> <span>${formatCurrency(inv.change)}</span></div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Thank you for your business!</strong></p>
+            <p>Please keep this invoice for your records.</p>
+          </div>
+          
+          <div class="actions">
+            <button class="btn btn-primary" onclick="window.print()">Print Invoice</button>
+            <button class="btn btn-success" onclick="window.close()">Close</button>
+          </div>
+        </div>
+        <script>
+          // Auto-print when the window opens
+          window.onload = function() {
+            // Uncomment the line below to automatically print when the window opens
+            // window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+    
+    newWindow.document.open();
+    newWindow.document.write(invoiceContent);
+    newWindow.document.close();
   };
   
   const exportToPDF = () => {
@@ -209,10 +329,10 @@ const Invoice = () => {
           </button>
           <button 
             className="btn btn-primary" 
-            onClick={handlePrint}
+            onClick={openInvoiceInNewWindow}
             disabled={loading}
           >
-            Print
+            View Invoice
           </button>
         </div>
       </div>
