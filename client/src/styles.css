@@ -1091,10 +1091,6 @@ textarea.form-control {
     page-break-inside: avoid !important;
     page-break-after: avoid !important;
   }
-  
-  body * {
-    visibility: hidden;
-  }
 }
   
   .bill-container,
