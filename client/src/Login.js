@@ -80,7 +80,7 @@ const Login = ({ onToggleForm }) => {
             </button>
           </div>
           <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
-            Default credentials: admin/admin or admin123/password123
+            <strong>NEW LOGIN CREDENTIALS:</strong> username: <code>admin</code> password: <code>123456</code>
           </small>
         </div>
         <button
