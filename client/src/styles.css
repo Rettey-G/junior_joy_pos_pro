@@ -1033,79 +1033,39 @@ textarea.form-control {
     margin: 5mm;
   }
   
-  /* Reset all elements */
-  * {
+  /* Hide everything by default */
+  body * {
     visibility: hidden;
-    margin: 0;
-    padding: 0;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
   
-  /* Only show what we want to print */
-  .bill-view, .invoice-page, .bill-container {
-    visibility: visible !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: auto;
-  }
-  
-  /* Make all children visible */
+  /* Only show the bill/invoice being printed */
+  .bill-view, .invoice-page, .bill-container,
   .bill-view *, .invoice-page *, .bill-container * {
     visibility: visible !important;
   }
   
-  /* Ensure tables display properly */
-  .bill-view table, .invoice-page table, .bill-container table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-  }
-  
-  .bill-view table th, .invoice-page table th, .bill-container table th,
-  .bill-view table td, .invoice-page table td, .bill-container table td {
-    padding: 3px !important;
-    text-align: left !important;
-    font-size: 10px !important;
-  }
-  
-  /* Adjust font sizes */
-  .bill-view h1, .invoice-page h1, .bill-container h1 { font-size: 18px !important; }
-  .bill-view h2, .invoice-page h2, .bill-container h2 { font-size: 16px !important; }
-  .bill-view h3, .invoice-page h3, .bill-container h3 { font-size: 14px !important; }
-  .bill-view p, .invoice-page p, .bill-container p { font-size: 10px !important; }
-  
-  /* Hide buttons and inputs */
-  button, .btn, input, select, .no-print {
-    display: none !important;
-  }
-  
-  /* Hide navigation and other elements */
-  .navbar, .footer, .sidebar, nav, header, footer {
-    display: none !important;
-  }
-  
-  /* Ensure proper page breaks */
+  /* Position the bill at the top of the page */
   .bill-view, .invoice-page, .bill-container {
-    page-break-inside: avoid !important;
-    page-break-after: avoid !important;
-  }
-  
-  .bill-container,
-  .bill-container * {
-    visibility: visible;
-  }
-  
-  .bill-container {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    box-shadow: none;
+    margin: 0;
+    padding: 10px;
   }
   
-  .bill-actions {
-    display: none;
+  /* Make tables display properly */
+  .bill-view table, .invoice-page table, .bill-container table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  /* Adjust font sizes */
+  .bill-view h2, .invoice-page h2, .bill-container h2 { font-size: 16px; }
+  .bill-view p, .invoice-page p, .bill-container p { font-size: 12px; }
+  
+  /* Hide navigation and buttons */
+  .navbar, .footer, button, .btn, .no-print {
+    display: none !important;
   }
 }
