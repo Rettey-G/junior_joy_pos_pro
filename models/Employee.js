@@ -24,13 +24,14 @@ const EmployeeSchema = new mongoose.Schema({
   },
   salaryMVR: {
     type: Number,
-    required: true
+    required: true,
+    default: 0
   },
   salaryUSD: {
     type: Number,
     default: function() {
-      // Default conversion rate (MVR to USD)
-      return this.salaryMVR / 15.42; // Approximate conversion rate
+      // Default conversion rate from MVR to USD (1 MVR ≈ 0.065 USD)
+      return this.salaryMVR ? Math.round(this.salaryMVR * 0.065 * 100) / 100 : 0;
     }
   },
   position: {

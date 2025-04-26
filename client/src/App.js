@@ -8,6 +8,7 @@ import Bills from './Bills.js';
 import Employees from './Employees.js';
 import SalesReports from './SalesReports.js';
 import Invoice from './Invoice.js';
+import NewInvoice from './NewInvoice.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 import { safeRender } from './utils';
 import './styles.css';
@@ -72,7 +73,13 @@ const Navigation = ({ onNavigate, currentPage }) => {
                 onClick={() => onNavigate('invoice')}
                 className={`nav-button ${currentPage === 'invoice' ? 'active' : ''}`}
               >
-                Invoice
+                Latest Invoice
+              </button>
+              <button 
+                onClick={() => onNavigate('newinvoice')}
+                className={`nav-button ${currentPage === 'newinvoice' ? 'active' : ''}`}
+              >
+                New Invoice
               </button>
               <button 
                 onClick={() => onNavigate('dashboard')}
@@ -157,6 +164,8 @@ const MainApp = () => {
         return <SalesReports />;
       case 'invoice':
         return <Invoice />;
+      case 'newinvoice':
+        return <NewInvoice />;
       case 'dashboard':
         return <Dashboard />;
       default:

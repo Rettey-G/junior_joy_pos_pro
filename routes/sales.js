@@ -141,6 +141,23 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+// Delete a sale
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const sale = await Sale.findById(req.params.id);
+    
+    if (!sale) {
+      return res.status(404).json({ message: 'Sale not found' });
+    }
+    
+    await Sale.findByIdAndDelete(req.params.id);
+    
+    res.json({ message: 'Sale deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Update sale status (refund or void)
 router.patch('/:id/status', auth, async (req, res) => {
   try {

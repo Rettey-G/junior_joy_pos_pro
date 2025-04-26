@@ -31,6 +31,7 @@ export const getSales = (page = 1, limit = 10) => api.get(`/api/sales?page=${pag
 export const getSale = (id) => api.get(`/api/sales/${id}`);
 export const updateSale = (id, saleData) => api.patch(`/api/sales/${id}`, saleData);
 export const updateSaleStatus = (id, status) => api.patch(`/api/sales/${id}/status`, { status });
+export const deleteSale = (id) => api.delete(`/api/sales/${id}`);
 export const getSalesReport = (period, startDate, endDate) => {
   let url = `/api/sales/reports/${period}`;
   if (period === 'custom' && startDate && endDate) {

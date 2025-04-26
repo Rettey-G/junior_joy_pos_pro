@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getSales, updateSale } from './api';
+import { getSales, updateSale, deleteSale } from './api';
 import { safeRender, formatCurrency } from './utils';
 import './styles.css';
 
@@ -93,6 +93,20 @@ const Bills = () => {
     }
   };
 
+  // Handle delete bill
+  const handleDelete = async (billId) => {
+    if (window.confirm('Are you sure you want to delete this bill? This action cannot be undone.')) {
+      try {
+        await deleteSale(billId);
+        // Refresh bills list after deletion
+        fetchBills();
+      } catch (err) {
+        console.error('Error deleting bill:', err);
+        setError('Failed to delete bill: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
   return (
     <div className="bills-page" style={{maxWidth: 1200, margin: '0 auto', padding: 24}}>
       <h2 style={{color: '#1976d2', marginBottom: 24}}>Bills Management</h2>
@@ -181,7 +195,10 @@ const Bills = () => {
                         <button className="btn btn-secondary btn-sm" style={{marginLeft: 8}} onClick={() => setEditingBillId(null)}>Cancel</button>
                       </>
                     ) : (
-                      <button className="btn btn-primary btn-sm" onClick={() => handleEdit(bill)}>Edit</button>
+                      <div style={{display: 'flex', gap: '8px'}}>
+                        <button className="btn btn-primary btn-sm" onClick={() => handleEdit(bill)}>Edit</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(bill._id)}>Delete</button>
+                      </div>
                     )}
                   </td>
                 </tr>

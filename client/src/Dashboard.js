@@ -14,11 +14,23 @@ const Dashboard = () => {
     endDate: new Date().toISOString().split('T')[0]
   });
 
-  // Fetch report data when period changes
+  // Fetch report data when period changes or on a timer
   useEffect(() => {
     if (!isAuthenticated) return;
     
-    const fetchReportData = async () => {
+    // Set up automatic refresh every 30 seconds
+    const refreshInterval = setInterval(() => {
+      fetchReportData();
+    }, 30000); // 30 seconds
+    
+    // Initial fetch
+    fetchReportData();
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated, reportPeriod, customDates]);
+  
+  const fetchReportData = async () => {
       setLoading(true);
       try {
         let response;
@@ -86,8 +98,7 @@ const Dashboard = () => {
       }
     };
 
-    fetchReportData();
-  }, [reportPeriod, customDates, isAuthenticated]);
+    // This is now handled by the new useEffect above
 
   // Format date for display
   const formatDate = (dateString) => {
