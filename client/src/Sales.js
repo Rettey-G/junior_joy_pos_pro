@@ -1,25 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext.js';
 import api, { createSale, getProducts } from './api';
 import { safeRender, formatCurrency } from './utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './styles.css';
+import './SalesStyles.css';
 
 const Sales = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [discount, setDiscount] = useState(0);
   const [billNumber, setBillNumber] = useState('');
   const [showBill, setShowBill] = useState(false);
   const [completedSale, setCompletedSale] = useState(null);
   const [amountPaid, setAmountPaid] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [notes, setNotes] = useState('');
+  const searchInputRef = useRef(null);
   
   // Constants for tax and service charge
   const GST_RATE = 0.16; // 16%
@@ -31,7 +36,41 @@ const Sales = () => {
     
     // Generate a unique bill number
     generateBillNumber();
-  }, []);
+    
+    // Focus on search input when component mounts
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+    
+    // Set up keyboard shortcuts
+    const handleKeyDown = (e) => {
+      // Alt+S to focus search
+      if (e.altKey && e.key === 's') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+      
+      // Alt+C to checkout (if cart is not empty)
+      if (e.altKey && e.key === 'c' && cart.length > 0 && customerName.trim() && parseFloat(amountPaid) >= calculateTotal()) {
+        e.preventDefault();
+        handleCheckout();
+      }
+      
+      // Alt+N for new sale (if showing bill)
+      if (e.altKey && e.key === 'n' && showBill) {
+        e.preventDefault();
+        setShowBill(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [cart, customerName, amountPaid]);
 
   // Fetch products from API
   const fetchProducts = async () => {
@@ -40,6 +79,7 @@ const Sales = () => {
       const response = await getProducts();
       if (response && response.data) {
         setProducts(response.data);
+        setFilteredProducts(response.data);
       }
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -61,23 +101,30 @@ const Sales = () => {
   };
 
   // Filter products based on search term
-  const filteredProducts = products.filter(product => {
-    if (!searchTerm) return true; // Show all products when no search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredProducts(products);
+      return;
+    }
     
-    // Safe search that handles null/undefined values
-    const productName = (product.name || '').toLowerCase();
-    const productCode = (product.code || '').toLowerCase();
-    const productCategory = (product.category || '').toLowerCase();
-    const productDetails = (product.details || '').toLowerCase();
-    const searchLower = searchTerm.toLowerCase();
+    const filtered = products.filter(product => {
+      // Safe search that handles null/undefined values
+      const productName = (product.name || '').toLowerCase();
+      const productCode = (product.code || '').toLowerCase();
+      const productCategory = (product.category || '').toLowerCase();
+      const productDetails = (product.details || '').toLowerCase();
+      const searchLower = searchTerm.toLowerCase();
+      
+      return (
+        productName.includes(searchLower) ||
+        productCode.includes(searchLower) ||
+        productCategory.includes(searchLower) ||
+        productDetails.includes(searchLower)
+      );
+    });
     
-    return (
-      productName.includes(searchLower) ||
-      productCode.includes(searchLower) ||
-      productCategory.includes(searchLower) ||
-      productDetails.includes(searchLower)
-    );
-  });
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
 
   const addToCart = (product) => {
     // Check if product is already in cart
@@ -93,6 +140,12 @@ const Sales = () => {
     } else {
       // Add new item to cart with quantity 1
       setCart([...cart, { ...product, quantity: 1 }]);
+    }
+    
+    // Clear search term after adding to cart
+    setSearchTerm('');
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
     }
   };
 
@@ -151,12 +204,12 @@ const Sales = () => {
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      alert('Please add items to cart before checkout');
+      setError('Please add items to cart before checkout');
       return;
     }
 
     if (!customerName.trim()) {
-      alert('Please enter customer name');
+      setError('Please enter customer name');
       return;
     }
 
@@ -165,6 +218,7 @@ const Sales = () => {
       const saleData = {
         billNumber,
         customer: customerName,
+        customerPhone: customerPhone,
         products: cart.map(item => ({
           product: item._id,
           name: item.name,
@@ -181,12 +235,11 @@ const Sales = () => {
         change: calculateChange(),
         cashier: user.name,
         status: 'Completed',
-        notes: ''
+        notes: notes
       };
 
       // Save sale to database
-      // Use the imported createSale function from api.js
-      const response = await createSale(saleData);
+      const response = await api.post('/api/sales', saleData);
       
       // Update completed sale state
       if (response && response.data) {
@@ -218,9 +271,11 @@ const Sales = () => {
       // Clear cart after successful checkout
       setCart([]);
       setCustomerName('');
+      setCustomerPhone('');
       setDiscount(0);
       setAmountPaid('');
       setPaymentMethod('Cash');
+      setNotes('');
       
       // Generate new bill number for next sale
       generateBillNumber();
@@ -229,7 +284,6 @@ const Sales = () => {
       setError('Failed to process checkout: ' + (err.response?.data?.message || err.message));
     }
   };
-
   // Open bill in a new window
   const openBillInNewWindow = () => {
     if (!completedSale) return;
@@ -247,30 +301,35 @@ const Sales = () => {
       <head>
         <title>Bill #${completedSale.billNumber}</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          .bill-container { max-width: 800px; margin: 0 auto; padding: 20px; }
-          .bill-header { text-align: center; margin-bottom: 20px; }
-          .bill-header h2 { color: #1976d2; margin: 0; }
+          body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
+          .bill-container { max-width: 800px; margin: 0 auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); }
+          .bill-header { text-align: center; margin-bottom: 30px; }
+          .bill-header h2 { color: #1976d2; margin: 0; font-size: 24px; }
+          .bill-header p { margin: 5px 0; color: #757575; }
+          .bill-logo { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 15px; }
           .bill-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
-          .bill-info-item { margin-bottom: 10px; }
-          .bill-info-label { font-weight: bold; }
+          .bill-info-item { margin-bottom: 15px; }
+          .bill-info-label { font-weight: bold; margin-bottom: 5px; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-          th { background-color: #f2f2f2; }
-          .totals { margin-left: auto; width: 250px; }
-          .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-          .grand-total { font-weight: bold; font-size: 1.1em; border-top: 1px solid #ddd; padding-top: 5px; }
+          th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+          th { background-color: #f5f7fa; font-weight: 600; }
+          .totals { width: 300px; margin-left: auto; }
+          .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+          .grand-total { font-weight: bold; font-size: 18px; border-top: 1px solid #e0e0e0; padding-top: 8px; margin-top: 8px; }
           .footer { text-align: center; margin-top: 30px; }
           .actions { text-align: center; margin-top: 30px; }
-          .btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; border-radius: 4px; border: none; }
-          .btn-primary { background-color: #1976d2; color: white; }
-          .btn-success { background-color: #4caf50; color: white; }
+          .btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s; }
+          .btn-primary { background-color: #1976d2; color: white; border: none; }
+          .btn-primary:hover { background-color: #1565c0; }
+          .btn-success { background-color: #4caf50; color: white; border: none; }
+          .btn-success:hover { background-color: #388e3c; }
           @media print { .actions { display: none; } }
         </style>
       </head>
       <body>
         <div class="bill-container">
           <div class="bill-header">
+            <img src="/juniorjoy.jpg" alt="Junior Joy Logo" class="bill-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+'" />
             <h2>Junior Joy POS</h2>
             <p>Professional Point of Sale System</p>
             <h3>BILL</h3>
@@ -282,6 +341,7 @@ const Sales = () => {
             <div class="bill-info-item">
               <div class="bill-info-label">Customer:</div>
               <div>${safeRender(completedSale.customer)}</div>
+              ${completedSale.customerPhone ? `<div>Phone: ${safeRender(completedSale.customerPhone)}</div>` : ''}
             </div>
             <div class="bill-info-item">
               <div class="bill-info-label">Cashier:</div>
@@ -317,13 +377,20 @@ const Sales = () => {
           
           <div class="totals">
             <div class="total-row"><span>Subtotal:</span> <span>MVR ${completedSale.subtotal.toFixed(2)}</span></div>
-            <div class="total-row"><span>GST:</span> <span>MVR ${completedSale.gst.toFixed(2)}</span></div>
+            <div class="total-row"><span>GST (16%):</span> <span>MVR ${completedSale.gst.toFixed(2)}</span></div>
             <div class="total-row"><span>Service Charge (10%):</span> <span>MVR ${completedSale.serviceCharge.toFixed(2)}</span></div>
             <div class="total-row"><span>Discount:</span> <span>- MVR ${completedSale.discount.toFixed(2)}</span></div>
             <div class="total-row grand-total"><span>Total:</span> <span>MVR ${completedSale.total.toFixed(2)}</span></div>
             <div class="total-row"><span>Paid:</span> <span>MVR ${completedSale.amountPaid.toFixed(2)}</span></div>
             <div class="total-row"><span>Change:</span> <span>MVR ${completedSale.change.toFixed(2)}</span></div>
           </div>
+          
+          ${completedSale.notes ? `
+            <div style="margin-top: 20px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
+              <div style="font-weight: bold; margin-bottom: 5px;">Notes:</div>
+              <div>${safeRender(completedSale.notes)}</div>
+            </div>
+          ` : ''}
           
           <div class="footer">
             <p><strong>Thank you for your business!</strong></p>
@@ -366,7 +433,7 @@ const Sales = () => {
 
   const generatePDF = () => {
     if (!completedSale) {
-      alert('No sale data available');
+      setError('No sale data available');
       return;
     }
     
@@ -388,18 +455,21 @@ const Sales = () => {
       
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
-      doc.text('Professional Point of Sale System', 105, 28, { align: 'center' });
+      doc.text('Professional Point of Sale System', 105, 35, { align: 'center' });
       
       // Add bill details
       doc.setFontSize(14);
-      doc.text('BILL', 105, 40, { align: 'center' });
+      doc.text('BILL', 105, 45, { align: 'center' });
       
       doc.setFontSize(10);
-      doc.text(`Bill No: ${completedSale.billNumber}`, 20, 50);
-      doc.text(`Date: ${new Date(completedSale.createdAt || Date.now()).toLocaleString()}`, 20, 55);
-      doc.text(`Customer: ${safeRender(completedSale.customer)}`, 20, 60);
-      doc.text(`Cashier: ${safeRender(completedSale.cashier)}`, 20, 65);
-      doc.text(`Payment Method: ${safeRender(completedSale.paymentMethod || 'Cash')}`, 20, 70);
+      doc.text(`Bill No: ${completedSale.billNumber}`, 20, 60);
+      doc.text(`Date: ${new Date(completedSale.createdAt || Date.now()).toLocaleString()}`, 20, 65);
+      doc.text(`Customer: ${safeRender(completedSale.customer)}`, 20, 70);
+      if (completedSale.customerPhone) {
+        doc.text(`Phone: ${safeRender(completedSale.customerPhone)}`, 20, 75);
+      }
+      doc.text(`Cashier: ${safeRender(completedSale.cashier)}`, 20, completedSale.customerPhone ? 80 : 75);
+      doc.text(`Payment Method: ${safeRender(completedSale.paymentMethod || 'Cash')}`, 20, completedSale.customerPhone ? 85 : 80);
       
       // Add products table
       const tableColumn = ["Item", "Qty", "Price", "Total"];
@@ -418,7 +488,7 @@ const Sales = () => {
       autoTable(doc, {
         head: [tableColumn],
         body: tableRows,
-        startY: 75,
+        startY: completedSale.customerPhone ? 95 : 90,
         theme: 'grid',
         styles: { fontSize: 9 },
         headStyles: { fillColor: [25, 118, 210] }
@@ -450,171 +520,363 @@ const Sales = () => {
       doc.text(`Change:`, 130, finalY + 35);
       doc.text(`MVR ${completedSale.change.toFixed(2)}`, 170, finalY + 35, { align: 'right' });
       
+      // Add notes if available
+      if (completedSale.notes) {
+        doc.text('Notes:', 20, finalY + 45);
+        doc.text(completedSale.notes, 20, finalY + 50);
+      }
+      
       // Add footer
       doc.setFontSize(10);
-      doc.text('Thank you for your business!', 105, finalY + 50, { align: 'center' });
+      doc.text('Thank you for your business!', 105, finalY + (completedSale.notes ? 65 : 50), { align: 'center' });
       doc.setFontSize(8);
-      doc.text('Please keep this invoice for your records.', 105, finalY + 55, { align: 'center' });
+      doc.text('Please keep this invoice for your records.', 105, finalY + (completedSale.notes ? 70 : 55), { align: 'center' });
       
       // Save the PDF with a proper filename
       doc.save(`Bill-${completedSale.billNumber}-${new Date().getTime()}.pdf`);
     } catch (err) {
       console.error('Error generating PDF:', err);
-      alert('Failed to generate PDF. Please try again.');
+      setError('Failed to generate PDF. Please try again.');
     }
   };
-
-  if (loading) return <div className="text-center mt-4">Loading products...</div>;
-  if (error) return <div className="text-center mt-4 text-danger">{error}</div>;
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="sales-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading products...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="sales-container" style={{flexDirection: 'column', gap: '32px', maxWidth: 1200, margin: '0 auto', padding: '24px 8px'}}>
-      <h2 className="mb-4" style={{marginBottom: 32, color: '#1976d2'}}>New Sale</h2>
-      <div className="card" style={{marginBottom: 32}}>
-        <div className="card-body" style={{display: 'flex', flexDirection: 'column', gap: 24}}>
-          <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
-            <label className="form-label">Customer Name</label>
-            <input className="form-control" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Enter customer name..." required />
-          </div>
-          <div style={{display: 'flex', flexWrap: 'wrap', gap: 16}}>
-            <div style={{flex: 2, minWidth: 200}}>
-              <label className="form-label">Search Products</label>
-              <input className="form-control" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by name, code, or category..." />
-              <div className="product-container" style={{ width: '100%', height: '400px', overflow: 'auto' }}>
-                <div className="card">
-                  <div className="card-header bg-primary text-white">
-                    <h5 className="mb-0">Products</h5>
-                  </div>
-                  <div className="card-body">
-                    {loading ? (
-                      <div className="text-center">
-                        <div className="spinner-border" role="status">
-                          <span className="sr-only">Loading...</span>
-                        </div>
-                      </div>
-                    ) : error ? (
-                      <div className="alert alert-danger">{error}</div>
-                    ) : filteredProducts.length === 0 ? (
-                      <div className="alert alert-info">No products found</div>
-                    ) : (
-                      <div className="product-grid" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                        {filteredProducts.map(product => (
-                          <div key={product._id} className="product-card" onClick={() => addToCart(product)}>
-                            <div className="product-name">{product.name}</div>
-                            <div className="product-price">{formatCurrency(product.price)}</div>
-                            <div className="product-stock">Stock: {product.SOH}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+    <div className="sales-container">
+      {/* Sales Header */}
+      <div className="sales-header">
+        <h2><i className="fa fa-shopping-cart"></i> New Sale</h2>
+        <div className="sales-actions">
+          <button 
+            className="btn btn-primary" 
+            onClick={fetchProducts}
+            disabled={loading}
+          >
+            <i className="fa fa-refresh"></i> Refresh Products
+          </button>
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="error-container">
+          <p>{error}</p>
+          <button 
+            className="btn btn-sm btn-danger" 
+            style={{ position: 'absolute', top: '10px', right: '10px' }}
+            onClick={() => setError(null)}
+          >
+            <i className="fa fa-times"></i>
+          </button>
+        </div>
+      )}
+
+      {/* Main Content - Show either the sales form or the bill */}
+      {!showBill ? (
+        <div className="sales-layout">
+          {/* Left Column - Products */}
+          <div className="left-column">
+            {/* Customer Information */}
+            <div className="customer-section">
+              <div className="customer-header">
+                <h3>Customer Information</h3>
+              </div>
+              <div className="customer-form">
+                <div className="form-group">
+                  <label className="form-label">Customer Name <span className="text-danger">*</span></label>
+                  <input 
+                    className="form-control" 
+                    value={customerName} 
+                    onChange={e => setCustomerName(e.target.value)} 
+                    placeholder="Enter customer name..." 
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Phone Number</label>
+                  <input 
+                    className="form-control" 
+                    value={customerPhone} 
+                    onChange={e => setCustomerPhone(e.target.value)} 
+                    placeholder="Enter phone number..." 
+                  />
                 </div>
               </div>
             </div>
-            <div style={{flex: 1, minWidth: 260}}>
-              <label className="form-label">Cart</label>
-              <div className="cart-section" style={{background: '#f9fbfd', borderRadius: 8, boxShadow: '0 1px 4px rgba(33,150,243,0.07)', padding: 12}}>
-                {cart.length === 0 ? (
-                  <div className="cart-empty">Cart is empty</div>
+
+            {/* Products Section */}
+            <div className="products-section">
+              <div className="products-header">
+                <h3>Products</h3>
+                <div>
+                  <span className="badge bg-primary">{filteredProducts.length} products</span>
+                </div>
+              </div>
+              
+              {/* Search Box */}
+              <div className="search-container">
+                <i className="fa fa-search"></i>
+                <input 
+                  type="text" 
+                  className="search-input" 
+                  placeholder="Search products by name, code, or category..." 
+                  value={searchTerm} 
+                  onChange={e => setSearchTerm(e.target.value)} 
+                  ref={searchInputRef}
+                />
+              </div>
+              
+              {/* Products Grid */}
+              <div className="products-grid">
+                {filteredProducts.length === 0 ? (
+                  <div style={{ gridColumn: '1 / -1', padding: '20px', textAlign: 'center', color: '#757575' }}>
+                    {searchTerm ? 'No products found matching your search.' : 'No products available.'}
+                  </div>
                 ) : (
-                  cart.map(item => (
-                    <div className="cart-item" key={item._id}>
-                      <div style={{flex: 1}}>{item.name}</div>
-                      <div className="quantity-control">
-                        <button className="quantity-button" onClick={() => updateQuantity(item._id, item.quantity - 1)}>-</button>
-                        <span className="quantity-value">{item.quantity}</span>
-                        <button className="quantity-button" onClick={() => updateQuantity(item._id, item.quantity + 1)}>+</button>
+                  filteredProducts.map(product => (
+                    <div 
+                      key={product._id} 
+                      className="product-card" 
+                      onClick={() => addToCart(product)}
+                    >
+                      <div className="product-name">{product.name}</div>
+                      <div className="product-price">{formatCurrency(product.price)}</div>
+                      <div className={`product-stock ${product.SOH < 5 ? 'low' : ''}`}>
+                        Stock: {product.SOH}
                       </div>
-                      <div style={{width: 60, textAlign: 'right'}}>MVR {(item.price * item.quantity).toFixed(2)}</div>
-                      <button className="btn btn-danger btn-sm" style={{marginLeft: 8}} onClick={() => removeFromCart(item._id)}>Remove</button>
                     </div>
                   ))
                 )}
               </div>
             </div>
           </div>
-          <div style={{display: 'flex', flexWrap: 'wrap', gap: 16}}>
-            <div style={{flex: 1, minWidth: 180}}>
-              <label className="form-label">Discount (%)</label>
-              <input className="form-control" type="number" min={0} max={100} value={discount} onChange={e => setDiscount(Number(e.target.value))} />
-            </div>
-            <div style={{flex: 1, minWidth: 180}}>
-              <label className="form-label">Payment Method</label>
-              <select 
-                className="form-control" 
-                value={paymentMethod} 
-                onChange={e => setPaymentMethod(e.target.value)}
-              >
-                <option value="Cash">Cash</option>
-                <option value="Card">Card</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-              </select>
-            </div>
-            <div style={{flex: 1, minWidth: 180}}>
-              <label className="form-label">Amount Paid</label>
-              <input className="form-control" type="number" min={0} value={amountPaid} onChange={e => setAmountPaid(e.target.value)} />
-            </div>
-          </div>
-          <div className="cart-totals" style={{marginTop: 16}}>
-            <div className="total-row"><span>Subtotal:</span> <span>MVR {calculateSubtotal().toFixed(2)}</span></div>
-            <div className="total-row"><span>GST (16%):</span> <span>MVR {calculateGST().toFixed(2)}</span></div>
-            <div className="total-row"><span>SC (10%):</span> <span>MVR {calculateServiceCharge().toFixed(2)}</span></div>
-            <div className="total-row"><span>Discount:</span> <span>- MVR {calculateDiscount().toFixed(2)}</span></div>
-            <div className="total-row grand-total"><span>Total:</span> <span>MVR {calculateTotal().toFixed(2)}</span></div>
-            <div className="total-row"><span>Change:</span> <span>MVR {calculateChange().toFixed(2)}</span></div>
-          </div>
-          <button 
-            className="btn btn-primary" 
-            style={{marginTop: 16, minWidth: 160}} 
-            onClick={handleCheckout}
-            disabled={cart.length === 0 || !customerName.trim() || parseFloat(amountPaid) < calculateTotal()}
-          >
-            Complete Sale & Generate Bill
-          </button>
-        </div>
-      </div>
-      
-      {/* Bill View (shows when checkout is complete) */}
-      {showBill && completedSale && (
-        <div className="bill-container" style={{marginTop: 32, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(33,150,243,0.08)', padding: 24, maxWidth: 600, margin: '32px auto'}}>
-          <div className="bill-header" style={{marginBottom: 24}}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-              <div>
-                <h2 style={{color: '#1976d2', margin: 0}}>Junior Joy POS</h2>
-                <p style={{margin: '4px 0 0 0', color: '#666'}}>Professional Point of Sale System</p>
+
+          {/* Right Column - Cart */}
+          <div className="right-column">
+            {/* Cart Section */}
+            <div className="cart-section">
+              <div className="cart-header">
+                <h3>Cart</h3>
+                <div>
+                  <span className="badge bg-primary">{cart.length} items</span>
+                  {cart.length > 0 && (
+                    <button 
+                      className="btn btn-sm btn-danger ms-2" 
+                      onClick={() => setCart([])}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
+              
+              {/* Cart Items */}
+              <div className="cart-items">
+                {cart.length === 0 ? (
+                  <div className="cart-empty">
+                    <i className="fa fa-shopping-cart"></i>
+                    <p>Your cart is empty. Add products to get started.</p>
+                  </div>
+                ) : (
+                  cart.map(item => (
+                    <div className="cart-item" key={item._id}>
+                      <div className="cart-item-details">
+                        <div className="cart-item-name">{item.name}</div>
+                        <div className="cart-item-price">{formatCurrency(item.price)} each</div>
+                      </div>
+                      <div className="quantity-control">
+                        <button 
+                          className="quantity-button" 
+                          onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                        >
+                          -
+                        </button>
+                        <span className="quantity-value">{item.quantity}</span>
+                        <button 
+                          className="quantity-button" 
+                          onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <div className="cart-item-total">
+                        {formatCurrency(item.price * item.quantity)}
+                      </div>
+                      <button 
+                        className="cart-item-remove" 
+                        onClick={() => removeFromCart(item._id)}
+                        title="Remove item"
+                      >
+                        <i className="fa fa-trash"></i>
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {/* Cart Totals */}
+              <div className="cart-totals">
+                <div className="total-row">
+                  <span>Subtotal:</span> 
+                  <span>{formatCurrency(calculateSubtotal())}</span>
+                </div>
+                <div className="total-row">
+                  <span>GST (16%):</span> 
+                  <span>{formatCurrency(calculateGST())}</span>
+                </div>
+                <div className="total-row">
+                  <span>Service Charge (10%):</span> 
+                  <span>{formatCurrency(calculateServiceCharge())}</span>
+                </div>
+                <div className="total-row">
+                  <span>Discount:</span> 
+                  <span>- {formatCurrency(calculateDiscount())}</span>
+                </div>
+                <div className="total-row grand-total">
+                  <span>Total:</span> 
+                  <span>{formatCurrency(calculateTotal())}</span>
+                </div>
+                {amountPaid && (
+                  <>
+                    <div className="total-row">
+                      <span>Amount Paid:</span> 
+                      <span>{formatCurrency(parseFloat(amountPaid) || 0)}</span>
+                    </div>
+                    <div className="total-row">
+                      <span>Change:</span> 
+                      <span>{formatCurrency(calculateChange())}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {/* Payment Section */}
+            <div className="payment-section">
+              <div className="payment-header">
+                <h3>Payment Details</h3>
+              </div>
+              <div className="payment-form">
+                <div className="form-group">
+                  <label className="form-label">Discount (%)</label>
+                  <input 
+                    className="form-control" 
+                    type="number" 
+                    min={0} 
+                    max={100} 
+                    value={discount} 
+                    onChange={e => setDiscount(Number(e.target.value))} 
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Payment Method</label>
+                  <select 
+                    className="form-control" 
+                    value={paymentMethod} 
+                    onChange={e => setPaymentMethod(e.target.value)}
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Amount Paid <span className="text-danger">*</span></label>
+                  <input 
+                    className="form-control" 
+                    type="number" 
+                    min={0} 
+                    value={amountPaid} 
+                    onChange={e => setAmountPaid(e.target.value)} 
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group mt-3">
+                <label className="form-label">Notes</label>
+                <textarea 
+                  className="form-control" 
+                  value={notes} 
+                  onChange={e => setNotes(e.target.value)} 
+                  placeholder="Add any additional notes here..."
+                  rows="2"
+                ></textarea>
+              </div>
+              
+              <button 
+                className="checkout-button" 
+                onClick={handleCheckout}
+                disabled={
+                  cart.length === 0 || 
+                  !customerName.trim() || 
+                  parseFloat(amountPaid) < calculateTotal()
+                }
+              >
+                <i className="fa fa-check-circle"></i> Complete Sale
+              </button>
+              
+              {parseFloat(amountPaid) < calculateTotal() && amountPaid !== '' && (
+                <div className="alert alert-warning mt-3" style={{ fontSize: '0.9rem' }}>
+                  <i className="fa fa-exclamation-triangle"></i> Amount paid must be at least equal to the total amount.
+                </div>
+              )}
+              
+              <div className="text-center mt-3" style={{ fontSize: '0.8rem', color: '#757575' }}>
+                <p>Press <kbd>Alt</kbd>+<kbd>S</kbd> to focus search, <kbd>Alt</kbd>+<kbd>C</kbd> to complete sale</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Bill View */
+        <div className="bill-container">
+          <div className="bill-header">
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
               <img 
-                src="/logo.png" 
+                src="/juniorjoy.jpg" 
                 alt="Junior Joy Logo" 
-                style={{width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid #bbdefb', boxShadow: '0 2px 8px rgba(33,150,243,0.15)'}} 
+                className="bill-logo" 
+                style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%', marginBottom: '15px' }}
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';              
+                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';            
                 }}
               />
+              <h2 className="bill-title">Junior Joy POS</h2>
+              <p className="bill-subtitle">Professional Point of Sale System</p>
+              <div style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: '15px 0 5px' }}>BILL</div>
+              <p>Bill No: {completedSale.billNumber}</p>
+              <p>Date: {new Date(completedSale.createdAt || Date.now()).toLocaleString()}</p>
             </div>
-            <div style={{fontSize: '1.1rem', marginTop: 16, textAlign: 'center', fontWeight: 'bold'}}>BILL</div>
-            <div style={{marginTop: 8, textAlign: 'center'}}>Bill No: {completedSale.billNumber}</div>
-            <div style={{textAlign: 'center'}}>Date: {new Date(completedSale.createdAt || Date.now()).toLocaleString()}</div>
           </div>
           
-          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 16}}>
-            <div>
-              <div style={{fontWeight: 'bold', marginBottom: 4}}>Customer:</div>
+          <div className="bill-info">
+            <div className="bill-info-item">
+              <div className="bill-info-label">Customer:</div>
               <div>{safeRender(completedSale.customer)}</div>
+              {completedSale.customerPhone && (
+                <div style={{ marginTop: '5px' }}>Phone: {safeRender(completedSale.customerPhone)}</div>
+              )}
             </div>
-            <div>
-              <div style={{fontWeight: 'bold', marginBottom: 4}}>Cashier:</div>
+            <div className="bill-info-item">
+              <div className="bill-info-label">Cashier:</div>
               <div>{safeRender(completedSale.cashier)}</div>
+              <div style={{ marginTop: '5px' }}>Payment: {safeRender(completedSale.paymentMethod || 'Cash')}</div>
             </div>
           </div>
           
-          <div style={{marginBottom: 8}}>
-            <div style={{fontWeight: 'bold', marginBottom: 4}}>Payment Method:</div>
-            <div>{safeRender(completedSale.paymentMethod || 'Cash')}</div>
-          </div>
-          
-          <table className="table" style={{marginBottom: 24}}>
+          <table className="bill-table">
             <thead>
               <tr>
                 <th>Item</th>
@@ -628,35 +890,58 @@ const Sales = () => {
                 <tr key={idx}>
                   <td>{safeRender(item.name)}</td>
                   <td>{item.quantity}</td>
-                  <td>MVR {Number(item.price).toFixed(2)}</td>
-                  <td>MVR {(Number(item.price) * Number(item.quantity)).toFixed(2)}</td>
+                  <td>{formatCurrency(item.price)}</td>
+                  <td>{formatCurrency(item.price * item.quantity)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="cart-totals">
-            <div className="total-row"><span>Subtotal:</span> <span>MVR {completedSale.subtotal.toFixed(2)}</span></div>
-            <div className="total-row"><span>GST:</span> <span>MVR {completedSale.gst.toFixed(2)}</span></div>
-            <div className="total-row"><span>Service Charge:</span> <span>MVR {completedSale.serviceCharge.toFixed(2)}</span></div>
-            <div className="total-row"><span>Discount:</span> <span>- MVR {completedSale.discount.toFixed(2)}</span></div>
-            <div className="total-row grand-total"><span>Total:</span> <span>MVR {completedSale.total.toFixed(2)}</span></div>
-            <div className="total-row"><span>Paid:</span> <span>MVR {completedSale.amountPaid.toFixed(2)}</span></div>
-            <div className="total-row"><span>Change:</span> <span>MVR {completedSale.change.toFixed(2)}</span></div>
+          
+          <div className="bill-totals">
+            <div className="total-row"><span>Subtotal:</span> <span>{formatCurrency(completedSale.subtotal)}</span></div>
+            <div className="total-row"><span>GST (16%):</span> <span>{formatCurrency(completedSale.gst)}</span></div>
+            <div className="total-row"><span>Service Charge (10%):</span> <span>{formatCurrency(completedSale.serviceCharge)}</span></div>
+            <div className="total-row"><span>Discount:</span> <span>- {formatCurrency(completedSale.discount)}</span></div>
+            <div className="total-row grand-total"><span>Total:</span> <span>{formatCurrency(completedSale.total)}</span></div>
+            <div className="total-row"><span>Paid:</span> <span>{formatCurrency(completedSale.amountPaid)}</span></div>
+            <div className="total-row"><span>Change:</span> <span>{formatCurrency(completedSale.change)}</span></div>
           </div>
-          <div style={{marginTop: 24, textAlign: 'center'}}>
-            <div style={{fontWeight: 'bold', marginBottom: 4}}>Thank you for your business!</div>
-            <div style={{fontSize: '0.9rem', color: '#666'}}>Please keep this invoice for your records.</div>
+          
+          {completedSale.notes && (
+            <div style={{ margin: '20px 0', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '6px' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Notes:</div>
+              <div>{safeRender(completedSale.notes)}</div>
+            </div>
+          )}
+          
+          <div style={{ textAlign: 'center', margin: '25px 0' }}>
+            <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>Thank you for your business!</p>
+            <p style={{ fontSize: '0.9rem', color: '#757575' }}>Please keep this invoice for your records.</p>
           </div>
-          <div style={{display: 'flex', justifyContent: 'center', gap: 16, marginTop: 24}}>
-            <button className="btn btn-primary" style={{minWidth: 120}} onClick={openBillInNewWindow}>
-              View Bill
+          
+          <div className="bill-actions">
+            <button 
+              className="bill-button bill-button-primary" 
+              onClick={openBillInNewWindow}
+            >
+              <i className="fa fa-external-link"></i> Open in New Window
             </button>
-            <button className="btn btn-success" style={{minWidth: 120}} onClick={generatePDF}>
-              Save as PDF
+            <button 
+              className="bill-button bill-button-success" 
+              onClick={generatePDF}
+            >
+              <i className="fa fa-file-pdf-o"></i> Save as PDF
             </button>
-            <button className="btn btn-secondary" style={{minWidth: 120}} onClick={() => setShowBill(false)}>
-              New Sale
+            <button 
+              className="bill-button bill-button-secondary" 
+              onClick={() => setShowBill(false)}
+            >
+              <i className="fa fa-plus-circle"></i> New Sale
             </button>
+          </div>
+          
+          <div className="text-center mt-3" style={{ fontSize: '0.8rem', color: '#757575' }}>
+            <p>Press <kbd>Alt</kbd>+<kbd>N</kbd> to start a new sale</p>
           </div>
         </div>
       )}
