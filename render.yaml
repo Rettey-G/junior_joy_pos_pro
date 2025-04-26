@@ -7,7 +7,7 @@ services:
     env: node
     rootDir: .
     buildCommand: npm install
-    startCommand: node index.js
+    startCommand: node test-server.js
     envVars:
       - key: MONGODB_URI
         value: mongodb+srv://Rettey:Adhu1447@cluster0.qi38xbl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
@@ -17,3 +17,5 @@ services:
         value: 5000
       - key: NODE_ENV
         value: production
+      - key: DEBUG
+        value: "true"
