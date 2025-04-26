@@ -35,11 +35,9 @@ const Login = ({ onToggleForm }) => {
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
       <h2>Login</h2>
-      {(error || loginError) && (
-        <div style={{ color: 'red', marginBottom: '10px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px', border: '1px solid #ffcdd2' }}>
-          {error || loginError}
-        </div>
-      )}
+      <div style={{ color: 'red', marginBottom: '10px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px', border: '1px solid #ffcdd2', display: (error || loginError) ? 'block' : 'none' }}>
+        {error || loginError || 'Invalid credentials'}
+      </div>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px' }}>Username:</label>
@@ -82,7 +80,7 @@ const Login = ({ onToggleForm }) => {
             </button>
           </div>
           <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
-            Default credentials: admin/admin or try admin123/password123
+            Default credentials: admin/admin or admin123/password123
           </small>
         </div>
         <button

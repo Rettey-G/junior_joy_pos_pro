@@ -76,7 +76,7 @@ const Navigation = ({ onNavigate, currentPage }) => {
       <div className="navbar-container">
         <div className="navbar-brand">
           <img 
-            src="/logo.png" 
+            src="/juniorjoy.jpg" 
             alt="Junior Joy Logo" 
             className="navbar-logo" 
             onError={(e) => {
@@ -242,7 +242,7 @@ const MainApp = () => {
       <footer className="footer modern-footer">
         <div className="footer-content">
           <div className="footer-left">
-            <img src="/logo.png" alt="Junior Joy Logo" className="footer-logo" />
+            <img src="/juniorjoy.jpg" alt="Junior Joy Logo" className="footer-logo" />
             <div className="footer-company">
               <h3>Junior Joy POS</h3>
               <p>Professional Point of Sale System</p>
