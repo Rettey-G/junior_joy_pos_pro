@@ -12,6 +12,9 @@ import NewInvoice from './NewInvoice.js';
 import Users from './Users.js';
 import Invoices from './Invoices.js';
 import Customers from './Customers.js';
+import InventoryManagement from './InventoryManagement.js';
+import Suppliers from './Suppliers.js';
+import PurchaseOrders from './PurchaseOrders.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 import { safeRender } from './utils';
 import './styles.css';
@@ -54,6 +57,9 @@ const Navigation = ({ onNavigate, currentPage }) => {
     { id: 'bills', label: 'Bills' },
     { id: 'customers', label: 'Customers' },
     { id: 'employees', label: 'Employees' },
+    { id: 'inventory', label: 'Inventory' },
+    { id: 'suppliers', label: 'Suppliers' },
+    { id: 'purchase-orders', label: 'Purchase Orders' },
     { id: 'reports', label: 'Sales Reports' },
     { id: 'invoices', label: 'Invoices' },
     { id: 'dashboard', label: 'Dashboard' },
@@ -205,6 +211,12 @@ const MainApp = () => {
         return <Customers />;
       case 'employees':
         return <Employees />;
+      case 'inventory':
+        return <InventoryManagement />;
+      case 'suppliers':
+        return <Suppliers />;
+      case 'purchase-orders':
+        return <PurchaseOrders />;
       case 'reports':
         return <SalesReports />;
       case 'invoices':

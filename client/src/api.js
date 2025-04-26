@@ -78,4 +78,56 @@ export const updateCustomer = (id, customerData) => api.put(`/api/customers/${id
 export const deleteCustomer = (id) => api.delete(`/api/customers/${id}`);
 export const getCustomerSales = (id) => api.get(`/api/customers/${id}/sales`);
 
+// Inventory Management API functions
+export const getInventoryTransactions = (page = 1, limit = 10, filters = {}) => {
+  let url = `/api/inventory/transactions?page=${page}&limit=${limit}`;
+  
+  if (filters.product) url += `&product=${filters.product}`;
+  if (filters.type) url += `&type=${filters.type}`;
+  if (filters.startDate) url += `&startDate=${filters.startDate}`;
+  if (filters.endDate) url += `&endDate=${filters.endDate}`;
+  
+  return api.get(url);
+};
+
+export const getInventoryTransaction = (id) => api.get(`/api/inventory/transactions/${id}`);
+export const adjustInventory = (adjustmentData) => api.post('/api/inventory/adjust', adjustmentData);
+export const getLowStockProducts = (threshold = 5) => api.get(`/api/inventory/low-stock?threshold=${threshold}`);
+export const getOutOfStockProducts = () => api.get('/api/inventory/out-of-stock');
+export const getInventoryValue = () => api.get('/api/inventory/value');
+
+// Supplier API functions
+export const getSuppliers = (page = 1, limit = 10, search = '', status = '') => {
+  let url = `/api/suppliers?page=${page}&limit=${limit}`;
+  
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (status) url += `&status=${status}`;
+  
+  return api.get(url);
+};
+
+export const getSupplier = (id) => api.get(`/api/suppliers/${id}`);
+export const createSupplier = (supplierData) => api.post('/api/suppliers', supplierData);
+export const updateSupplier = (id, supplierData) => api.put(`/api/suppliers/${id}`, supplierData);
+export const deleteSupplier = (id) => api.delete(`/api/suppliers/${id}`);
+
+// Purchase Order API functions
+export const getPurchaseOrders = (page = 1, limit = 10, filters = {}) => {
+  let url = `/api/purchase-orders?page=${page}&limit=${limit}`;
+  
+  if (filters.status) url += `&status=${filters.status}`;
+  if (filters.supplier) url += `&supplier=${filters.supplier}`;
+  if (filters.startDate) url += `&startDate=${filters.startDate}`;
+  if (filters.endDate) url += `&endDate=${filters.endDate}`;
+  
+  return api.get(url);
+};
+
+export const getPurchaseOrder = (id) => api.get(`/api/purchase-orders/${id}`);
+export const createPurchaseOrder = (poData) => api.post('/api/purchase-orders', poData);
+export const updatePurchaseOrder = (id, poData) => api.put(`/api/purchase-orders/${id}`, poData);
+export const deletePurchaseOrder = (id) => api.delete(`/api/purchase-orders/${id}`);
+export const receivePurchaseOrder = (id, receivedData) => api.put(`/api/purchase-orders/${id}/receive`, receivedData);
+export const cancelPurchaseOrder = (id, reason) => api.put(`/api/purchase-orders/${id}/cancel`, { reason });
+
 export default api;

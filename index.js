@@ -8,6 +8,9 @@ const salesRoutes = require('./routes/sales');
 const employeesRoutes = require('./routes/employees');
 const usersRoutes = require('./routes/users');
 const customersRoutes = require('./routes/customers');
+const inventoryRoutes = require('./routes/inventory');
+const suppliersRoutes = require('./routes/suppliers');
+const purchaseOrdersRoutes = require('./routes/purchaseOrders');
 const { auth } = require('./middleware/auth');
 
 const app = express();
@@ -38,6 +41,9 @@ app.use('/api/sales', salesRoutes);
 app.use('/api/employees', employeesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/customers', customersRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/suppliers', suppliersRoutes);
+app.use('/api/purchase-orders', purchaseOrdersRoutes);
 
 // Test route
 app.get('/', (req, res) => {

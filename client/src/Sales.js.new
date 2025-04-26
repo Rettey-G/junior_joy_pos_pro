@@ -1,0 +1,286 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from './AuthContext.js';
+import api, { createSale, getProducts } from './api';
+import { safeRender, formatCurrency } from './utils';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import './styles.css';
+import './SalesStyles.css';
+
+const Sales = () => {
+  const { user } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [billNumber, setBillNumber] = useState('');
+  const [showBill, setShowBill] = useState(false);
+  const [completedSale, setCompletedSale] = useState(null);
+  const [amountPaid, setAmountPaid] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [notes, setNotes] = useState('');
+  const searchInputRef = useRef(null);
+  
+  // Constants for tax and service charge
+  const GST_RATE = 0.16; // 16%
+  const SERVICE_CHARGE_RATE = 0.10; // 10%
+
+  useEffect(() => {
+    // Fetch products
+    fetchProducts();
+    
+    // Generate a unique bill number
+    generateBillNumber();
+    
+    // Focus on search input when component mounts
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+    
+    // Set up keyboard shortcuts
+    const handleKeyDown = (e) => {
+      // Alt+S to focus search
+      if (e.altKey && e.key === 's') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+      
+      // Alt+C to checkout (if cart is not empty)
+      if (e.altKey && e.key === 'c' && cart.length > 0 && customerName.trim() && parseFloat(amountPaid) >= calculateTotal()) {
+        e.preventDefault();
+        handleCheckout();
+      }
+      
+      // Alt+N for new sale (if showing bill)
+      if (e.altKey && e.key === 'n' && showBill) {
+        e.preventDefault();
+        setShowBill(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [cart, customerName, amountPaid]);
+
+  // Fetch products from API
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await getProducts();
+      if (response && response.data) {
+        setProducts(response.data);
+        setFilteredProducts(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError('Failed to load products: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateBillNumber = () => {
+    // Generate a bill number with format: YYYYMMDD-XXXX (where XXXX is a random 4-digit number)
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const random = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+    
+    setBillNumber(`${year}${month}${day}-${random}`);
+  };
+
+  // Filter products based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredProducts(products);
+      return;
+    }
+    
+    const filtered = products.filter(product => {
+      // Safe search that handles null/undefined values
+      const productName = (product.name || '').toLowerCase();
+      const productCode = (product.code || '').toLowerCase();
+      const productCategory = (product.category || '').toLowerCase();
+      const productDetails = (product.details || '').toLowerCase();
+      const searchLower = searchTerm.toLowerCase();
+      
+      return (
+        productName.includes(searchLower) ||
+        productCode.includes(searchLower) ||
+        productCategory.includes(searchLower) ||
+        productDetails.includes(searchLower)
+      );
+    });
+    
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
+
+  const addToCart = (product) => {
+    // Check if product is already in cart
+    const existingItem = cart.find(item => item._id === product._id);
+    
+    if (existingItem) {
+      // Increment quantity if already in cart
+      setCart(cart.map(item => 
+        item._id === product._id 
+          ? { ...item, quantity: item.quantity + 1 } 
+          : item
+      ));
+    } else {
+      // Add new item to cart with quantity 1
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
+    
+    // Clear search term after adding to cart
+    setSearchTerm('');
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(cart.filter(item => item._id !== productId));
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    // If quantity is zero, remove the item from cart
+    if (newQuantity === 0) {
+      removeFromCart(productId);
+      return;
+    }
+    
+    // If quantity is negative, don't update
+    if (newQuantity < 0) return;
+    
+    setCart(cart.map(item => 
+      item._id === productId 
+        ? { ...item, quantity: newQuantity } 
+        : item
+    ));
+  };
+
+  // Calculate subtotal (before tax and service charge)
+  const calculateSubtotal = () => {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  // Calculate GST amount
+  const calculateGST = () => {
+    return calculateSubtotal() * GST_RATE;
+  };
+
+  // Calculate service charge amount
+  const calculateServiceCharge = () => {
+    return calculateSubtotal() * SERVICE_CHARGE_RATE;
+  };
+
+  // Calculate discount amount
+  const calculateDiscount = () => {
+    return (calculateSubtotal() * discount) / 100;
+  };
+
+  // Calculate total amount
+  const calculateTotal = () => {
+    return calculateSubtotal() + calculateGST() + calculateServiceCharge() - calculateDiscount();
+  };
+
+  // Calculate change to give to customer
+  const calculateChange = () => {
+    const paid = parseFloat(amountPaid) || 0;
+    const total = calculateTotal();
+    return paid > total ? paid - total : 0;
+  };
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) {
+      setError('Please add items to cart before checkout');
+      return;
+    }
+
+    if (!customerName.trim()) {
+      setError('Please enter customer name');
+      return;
+    }
+
+    try {
+      // Prepare sale data
+      const saleData = {
+        billNumber,
+        customer: customerName,
+        customerPhone: customerPhone,
+        products: cart.map(item => ({
+          product: item._id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        subtotal: calculateSubtotal(),
+        gst: calculateGST(),
+        serviceCharge: calculateServiceCharge(),
+        discount: calculateDiscount(),
+        total: calculateTotal(),
+        paymentMethod: paymentMethod,
+        amountPaid: parseFloat(amountPaid) || 0,
+        change: calculateChange(),
+        cashier: user.name,
+        status: 'Completed',
+        notes: notes
+      };
+
+      // Save sale to database
+      const response = await api.post('/api/sales', saleData);
+      
+      // Update completed sale state
+      if (response && response.data) {
+        // Make sure all numeric fields are actually numbers
+        const processedSale = {
+          ...response.data,
+          subtotal: Number(response.data.subtotal || 0),
+          gst: Number(response.data.gst || 0),
+          serviceCharge: Number(response.data.serviceCharge || 0),
+          discount: Number(response.data.discount || 0),
+          total: Number(response.data.total || 0),
+          amountPaid: Number(response.data.amountPaid || 0),
+          change: Number(response.data.change || 0),
+          // Ensure customer is a string
+          customer: String(response.data.customer || ''),
+          // Ensure cashier is a string
+          cashier: String(response.data.cashier || ''),
+          // Ensure products is an array
+          products: Array.isArray(response.data.products) ? response.data.products : [],
+          // Ensure payment method is a string
+          paymentMethod: String(response.data.paymentMethod || 'Cash')
+        };
+        setCompletedSale(processedSale);
+      }
+      
+      // Show bill
+      setShowBill(true);
+      
+      // Clear cart after successful checkout
+      setCart([]);
+      setCustomerName('');
+      setCustomerPhone('');
+      setDiscount(0);
+      setAmountPaid('');
+      setPaymentMethod('Cash');
+      setNotes('');
+      
+      // Generate new bill number for next sale
+      generateBillNumber();
+      
+    } catch (err) {
+      setError('Failed to process checkout: ' + (err.response?.data?.message || err.message));
+    }
+  };
