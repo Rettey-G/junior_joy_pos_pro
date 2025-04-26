@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getSales, getSale, updateSale, deleteSale } from './api';
 import { safeRender, formatCurrency } from './utils';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './styles.css';
 
 const Invoices = () => {
@@ -119,6 +119,126 @@ const Invoices = () => {
     window.print();
   };
 
+  const openInvoiceInNewWindow = (invoice) => {
+    if (!invoice) return;
+    
+    const newWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!newWindow) {
+      alert('Please allow popups for this site to view the invoice in a new window.');
+      return;
+    }
+    
+    // Create invoice content
+    const invoiceContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoice #${invoice.billNumber || 'N/A'}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .invoice-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+          .invoice-header { text-align: center; margin-bottom: 20px; }
+          .invoice-header h2 { color: #1976d2; margin: 0; }
+          .invoice-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          .invoice-info-item { margin-bottom: 10px; }
+          .invoice-info-label { font-weight: bold; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+          th { background-color: #f2f2f2; }
+          .totals { margin-left: auto; width: 250px; }
+          .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+          .grand-total { font-weight: bold; font-size: 1.1em; border-top: 1px solid #ddd; padding-top: 5px; }
+          .footer { text-align: center; margin-top: 30px; }
+          .actions { text-align: center; margin-top: 30px; }
+          .btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; border-radius: 4px; border: none; }
+          .btn-primary { background-color: #1976d2; color: white; }
+          .btn-success { background-color: #4caf50; color: white; }
+          @media print { .actions { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-container">
+          <div class="invoice-header">
+            <h2>Junior Joy POS</h2>
+            <p>Professional Point of Sale System</p>
+            <h3>INVOICE</h3>
+            <p>Bill No: ${invoice.billNumber || 'N/A'}</p>
+            <p>Date: ${new Date(invoice.createdAt || Date.now()).toLocaleString()}</p>
+          </div>
+          
+          <div class="invoice-info">
+            <div class="invoice-info-item">
+              <div class="invoice-info-label">Customer:</div>
+              <div>${safeRender(invoice.customer?.name || invoice.customer || 'Walk-in Customer')}</div>
+            </div>
+            <div class="invoice-info-item">
+              <div class="invoice-info-label">Cashier:</div>
+              <div>${safeRender(invoice.cashier?.name || invoice.cashier || 'Staff')}</div>
+            </div>
+          </div>
+          
+          <div class="invoice-info-item">
+            <div class="invoice-info-label">Payment Method:</div>
+            <div>${invoice.paymentMethod || 'Cash'}</div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(invoice.products || []).map(item => `
+                <tr>
+                  <td>${safeRender(item.name || item.product?.name || 'Unknown Item')}</td>
+                  <td>${item.quantity}</td>
+                  <td>MVR ${Number(item.price).toFixed(2)}</td>
+                  <td>MVR ${(Number(item.price) * Number(item.quantity)).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="totals">
+            <div class="total-row"><span>Subtotal:</span> <span>MVR ${Number(invoice.subtotal || 0).toFixed(2)}</span></div>
+            <div class="total-row"><span>GST:</span> <span>MVR ${Number(invoice.gst || 0).toFixed(2)}</span></div>
+            <div class="total-row"><span>Service Charge:</span> <span>MVR ${Number(invoice.serviceCharge || 0).toFixed(2)}</span></div>
+            <div class="total-row"><span>Discount:</span> <span>- MVR ${Number(invoice.discount || 0).toFixed(2)}</span></div>
+            <div class="total-row grand-total"><span>Total:</span> <span>MVR ${Number(invoice.total || 0).toFixed(2)}</span></div>
+            <div class="total-row"><span>Paid:</span> <span>MVR ${Number(invoice.amountPaid || 0).toFixed(2)}</span></div>
+            <div class="total-row"><span>Change:</span> <span>MVR ${Number(invoice.change || 0).toFixed(2)}</span></div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Thank you for your business!</strong></p>
+            <p>Please keep this invoice for your records.</p>
+          </div>
+          
+          <div class="actions">
+            <button class="btn btn-primary" onclick="window.print()">Print Invoice</button>
+            <button class="btn btn-success" onclick="window.close()">Close</button>
+          </div>
+        </div>
+        <script>
+          // Auto-print when the window opens
+          window.onload = function() {
+            // Uncomment the line below to automatically print when the window opens
+            // window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+    
+    newWindow.document.open();
+    newWindow.document.write(invoiceContent);
+    newWindow.document.close();
+  };
+
   const exportToPDF = () => {
     if (!selectedInvoice) return;
     
@@ -163,7 +283,7 @@ const Invoices = () => {
         tableRows.push(itemData);
       });
       
-      doc.autoTable({
+      autoTable(doc, {
         head: [tableColumn],
         body: tableRows,
         startY: 75,
@@ -173,7 +293,7 @@ const Invoices = () => {
       });
       
       // Add totals
-      const finalY = doc.lastAutoTable.finalY + 10;
+      const finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 75) + 10;
       
       doc.text(`Subtotal:`, 130, finalY);
       doc.text(`MVR ${Number(selectedInvoice.subtotal || 0).toFixed(2)}`, 170, finalY, { align: 'right' });
@@ -217,6 +337,12 @@ const Invoices = () => {
       <div className="invoices-header" style={{marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
         <h2 style={{color: '#1976d2', marginBottom: 0}}>Invoices</h2>
         <div className="invoice-actions">
+          <button 
+            className="btn btn-success me-2" 
+            onClick={() => window.location.href = '/sales'}
+          >
+            <i className="fa fa-plus"></i> Create New Invoice
+          </button>
           <button 
             className="btn btn-primary" 
             onClick={() => fetchInvoices(currentPage)}
@@ -262,8 +388,15 @@ const Invoices = () => {
                       <td>{invoice.paymentMethod || 'Cash'}</td>
                       <td>
                         <button 
-                          className="btn btn-sm btn-info me-2" 
-                          onClick={() => handleViewInvoice(invoice._id)}
+                          className="btn btn-sm btn-primary me-1" 
+                          onClick={() => {
+                            handleViewInvoice(invoice._id);
+                            setTimeout(() => {
+                              if (selectedInvoice) {
+                                openInvoiceInNewWindow(selectedInvoice);
+                              }
+                            }, 500);
+                          }}
                         >
                           View
                         </button>
@@ -509,9 +642,9 @@ const Invoices = () => {
                     <button 
                       type="button" 
                       className="btn btn-primary" 
-                      onClick={handlePrint}
+                      onClick={() => openInvoiceInNewWindow(selectedInvoice)}
                     >
-                      Print
+                      View Invoice
                     </button>
                   </>
                 )}

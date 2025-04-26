@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getSales } from './api';
 import { safeRender, formatCurrency } from './utils';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './styles.css';
 
 // Fallback sample invoice in case no data is available
@@ -256,7 +256,7 @@ const Invoice = () => {
         tableRows.push(itemData);
       });
       
-      doc.autoTable({
+      autoTable(doc, {
         head: [tableColumn],
         body: tableRows,
         startY: 75,
@@ -266,7 +266,7 @@ const Invoice = () => {
       });
       
       // Add totals
-      const finalY = doc.lastAutoTable.finalY + 10;
+      const finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 75) + 10;
       
       doc.text(`Subtotal:`, 130, finalY);
       doc.text(formatCurrency(inv.subtotal), 170, finalY, { align: 'right' });

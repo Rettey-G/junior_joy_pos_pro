@@ -37,7 +37,6 @@ const Navigation = ({ onNavigate, currentPage }) => {
     { id: 'employees', label: 'Employees' },
     { id: 'reports', label: 'Sales Reports' },
     { id: 'invoices', label: 'Invoices' },
-    { id: 'invoice', label: 'Latest Invoice' },
     { id: 'dashboard', label: 'Dashboard' },
   ];
   
@@ -187,8 +186,6 @@ const MainApp = () => {
         return <SalesReports />;
       case 'invoices':
         return <Invoices />;
-      case 'invoice':
-        return <Invoice />;
       case 'dashboard':
         return <Dashboard isAuthenticated={isAuthenticated} />;
       case 'users':

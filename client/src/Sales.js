@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext.js';
 import api from './api';
 import { safeRender, formatCurrency } from './utils';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './styles.css';
 
 const Sales = () => {
@@ -397,7 +397,7 @@ const Sales = () => {
         tableRows.push(itemData);
       });
       
-      doc.autoTable({
+      autoTable(doc, {
         head: [tableColumn],
         body: tableRows,
         startY: 75,
@@ -407,7 +407,7 @@ const Sales = () => {
       });
       
       // Add totals
-      const finalY = doc.lastAutoTable.finalY + 10;
+      const finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 75) + 10;
       
       doc.text(`Subtotal:`, 130, finalY);
       doc.text(`MVR ${completedSale.subtotal.toFixed(2)}`, 170, finalY, { align: 'right' });
