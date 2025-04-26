@@ -263,7 +263,7 @@ const Sales = () => {
           <div class="bill-header">
             <h2>Junior Joy POS</h2>
             <p>Professional Point of Sale System</p>
-            <h3>INVOICE</h3>
+            <h3>BILL</h3>
             <p>Bill No: ${completedSale.billNumber}</p>
             <p>Date: ${new Date(completedSale.createdAt || Date.now()).toLocaleString()}</p>
           </div>
@@ -372,9 +372,9 @@ const Sales = () => {
       doc.setTextColor(0, 0, 0);
       doc.text('Professional Point of Sale System', 105, 28, { align: 'center' });
       
-      // Add invoice details
+      // Add bill details
       doc.setFontSize(14);
-      doc.text('INVOICE', 105, 40, { align: 'center' });
+      doc.text('BILL', 105, 40, { align: 'center' });
       
       doc.setFontSize(10);
       doc.text(`Bill No: ${completedSale.billNumber}`, 20, 50);

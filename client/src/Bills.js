@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getSales, updateSale, deleteSale } from './api';
 import { safeRender, formatCurrency } from './utils';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import './styles.css';
 
 const Bills = () => {
@@ -120,6 +120,137 @@ const Bills = () => {
     }
   };
 
+  // Function to open bill in a new window
+  const openBillInNewWindow = (bill) => {
+    if (!bill) return;
+    
+    try {
+      const newWindow = window.open('', '_blank', 'width=800,height=600');
+      if (!newWindow) {
+        alert('Popup blocked! Please allow popups for this site to view the bill.');
+        return;
+      }
+      
+      // Create bill content with inline styles
+      const billContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Bill #${bill.billNumber}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .bill-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+            .bill-header { text-align: center; margin-bottom: 20px; }
+            .bill-header h2 { color: #1976d2; margin: 0; }
+            .bill-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+            .bill-info-item { margin-bottom: 10px; }
+            .bill-info-label { font-weight: bold; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+            th { background-color: #f2f2f2; }
+            .totals { margin-left: auto; width: 250px; }
+            .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+            .grand-total { font-weight: bold; font-size: 1.1em; border-top: 1px solid #ddd; padding-top: 5px; }
+            .footer { text-align: center; margin-top: 30px; }
+            .actions { text-align: center; margin-top: 30px; }
+            .btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; border-radius: 4px; border: none; }
+            .btn-primary { background-color: #1976d2; color: white; }
+            .btn-success { background-color: #4caf50; color: white; }
+            @media print { .actions { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="bill-container">
+            <div class="bill-header">
+              <h2>Junior Joy POS</h2>
+              <p>Professional Point of Sale System</p>
+              <h3>BILL</h3>
+              <p>Bill No: ${bill.billNumber}</p>
+              <p>Date: ${new Date(bill.createdAt || Date.now()).toLocaleString()}</p>
+            </div>
+            
+            <div class="bill-info">
+              <div>
+                <p><span class="bill-info-label">Customer:</span> ${typeof bill.customer === 'object' ? safeRender(bill.customer.name) : safeRender(bill.customer)}</p>
+                <p><span class="bill-info-label">Cashier:</span> ${typeof bill.cashier === 'object' ? safeRender(bill.cashier.name) : safeRender(bill.cashier)}</p>
+              </div>
+            </div>
+            
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${bill.products.map(item => `
+                  <tr>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>MVR ${item.price.toFixed(2)}</td>
+                    <td>MVR ${(item.price * item.quantity).toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            
+            <div class="totals">
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <span>MVR ${(bill.subtotal || 0).toFixed(2)}</span>
+              </div>
+              <div class="total-row">
+                <span>GST (16%):</span>
+                <span>MVR ${(bill.gst || 0).toFixed(2)}</span>
+              </div>
+              <div class="total-row">
+                <span>Service Charge (10%):</span>
+                <span>MVR ${(bill.serviceCharge || 0).toFixed(2)}</span>
+              </div>
+              <div class="total-row">
+                <span>Discount:</span>
+                <span>MVR ${(bill.discount || 0).toFixed(2)}</span>
+              </div>
+              <div class="total-row grand-total">
+                <span>Total:</span>
+                <span>MVR ${(bill.total || 0).toFixed(2)}</span>
+              </div>
+              <div class="total-row">
+                <span>Amount Paid:</span>
+                <span>MVR ${(bill.amountPaid || 0).toFixed(2)}</span>
+              </div>
+              <div class="total-row">
+                <span>Change:</span>
+                <span>MVR ${(bill.change || 0).toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <div class="footer">
+              <p>Thank you for your business!</p>
+              <p>${bill.notes || ''}</p>
+            </div>
+            
+            <div class="actions">
+              <button class="btn btn-primary" onclick="window.print()">Print Bill</button>
+              <button class="btn btn-success" onclick="window.close()">Close</button>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      newWindow.document.open();
+      newWindow.document.write(billContent);
+      newWindow.document.close();
+    } catch (err) {
+      console.error('Error opening bill in new window:', err);
+      alert('Failed to open bill in new window. Please try again.');
+    }
+  };
+
   // Handle delete bill
   const handleDelete = async (billId) => {
     if (window.confirm('Are you sure you want to delete this bill? This action cannot be undone.')) {
@@ -182,90 +313,79 @@ const Bills = () => {
                   </td>
                   <td>
                     {editingBillId === bill._id ? (
-                      <table className="table table-sm" style={{background: '#f9f9f9'}}>
-                        <thead>
-                          <tr>
-                            <th>Item</th>
-                            <th>Qty</th>
-                            <th>Price</th>
-                            <th>Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {editLines.map((line, idx) => (
-                            <tr key={idx}>
-                              <td>{line.name}</td>
-                              <td>
-                                <input type="number" min={1} value={line.quantity} onChange={e => handleLineChange(idx, 'quantity', e.target.value)} style={{width: 60}} />
-                              </td>
-                              <td>
-                                <input type="number" min={0} value={line.price} onChange={e => handleLineChange(idx, 'price', e.target.value)} style={{width: 80}} />
-                              </td>
-                              <td>{formatCurrency(line.quantity * line.price)}</td>
+                      <div className="bill-edit-form">
+                        <table className="table table-sm products-table" style={{background: '#f9f9f9'}}>
+                          <thead>
+                            <tr>
+                              <th>Item</th>
+                              <th>Qty</th>
+                              <th>Price</th>
+                              <th>Total</th>
                             </tr>
-                          ))}
-                          <tr>
-                            <td colSpan="4">
-                              <div className="mt-3">
-                                <div className="form-group row">
-                                  <label className="col-sm-4 col-form-label">Discount:</label>
-                                  <div className="col-sm-8">
-                                    <input 
-                                      type="number" 
-                                      className="form-control" 
-                                      value={editBillDetails.discount || bill.discount || 0} 
-                                      onChange={(e) => setEditBillDetails({...editBillDetails, discount: Number(e.target.value)})} 
-                                    />
-                                  </div>
-                                </div>
-                                <div className="form-group row">
-                                  <label className="col-sm-4 col-form-label">GST (16%):</label>
-                                  <div className="col-sm-8">
-                                    <input 
-                                      type="number" 
-                                      className="form-control" 
-                                      value={editBillDetails.gst || bill.gst || 0} 
-                                      onChange={(e) => setEditBillDetails({...editBillDetails, gst: Number(e.target.value)})} 
-                                    />
-                                  </div>
-                                </div>
-                                <div className="form-group row">
-                                  <label className="col-sm-4 col-form-label">Service Charge (10%):</label>
-                                  <div className="col-sm-8">
-                                    <input 
-                                      type="number" 
-                                      className="form-control" 
-                                      value={editBillDetails.serviceCharge || bill.serviceCharge || 0} 
-                                      onChange={(e) => setEditBillDetails({...editBillDetails, serviceCharge: Number(e.target.value)})} 
-                                    />
-                                  </div>
-                                </div>
-                                <div className="form-group row">
-                                  <label className="col-sm-4 col-form-label">Customer:</label>
-                                  <div className="col-sm-8">
-                                    <input 
-                                      type="text" 
-                                      className="form-control" 
-                                      value={editBillDetails.customer || (typeof bill.customer === 'object' ? bill.customer.name : bill.customer) || ''} 
-                                      onChange={(e) => setEditBillDetails({...editBillDetails, customer: e.target.value})} 
-                                    />
-                                  </div>
-                                </div>
-                                <div className="form-group row">
-                                  <label className="col-sm-4 col-form-label">Notes:</label>
-                                  <div className="col-sm-8">
-                                    <textarea 
-                                      className="form-control" 
-                                      value={editBillDetails.notes || bill.notes || ''} 
-                                      onChange={(e) => setEditBillDetails({...editBillDetails, notes: e.target.value})} 
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {editLines.map((line, idx) => (
+                              <tr key={idx}>
+                                <td>{line.name}</td>
+                                <td>
+                                  <input type="number" min={1} value={line.quantity} onChange={e => handleLineChange(idx, 'quantity', e.target.value)} style={{width: 60}} />
+                                </td>
+                                <td>
+                                  <input type="number" min={0} value={line.price} onChange={e => handleLineChange(idx, 'price', e.target.value)} style={{width: 80}} />
+                                </td>
+                                <td>{formatCurrency(line.quantity * line.price)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div className="bill-edit-details" style={{display: 'flex', flexWrap: 'wrap'}}>
+                          <div className="form-group" style={{marginRight: '20px', minWidth: '200px'}}>
+                            <label>Discount:</label>
+                            <input 
+                              type="number" 
+                              className="form-control" 
+                              value={editBillDetails.discount || bill.discount || 0} 
+                              onChange={(e) => setEditBillDetails({...editBillDetails, discount: Number(e.target.value)})} 
+                            />
+                          </div>
+                          <div className="form-group" style={{marginRight: '20px', minWidth: '200px'}}>
+                            <label>GST (16%):</label>
+                            <input 
+                              type="number" 
+                              className="form-control" 
+                              value={editBillDetails.gst || bill.gst || 0} 
+                              onChange={(e) => setEditBillDetails({...editBillDetails, gst: Number(e.target.value)})} 
+                            />
+                          </div>
+                          <div className="form-group" style={{marginRight: '20px', minWidth: '200px'}}>
+                            <label>Service Charge (10%):</label>
+                            <input 
+                              type="number" 
+                              className="form-control" 
+                              value={editBillDetails.serviceCharge || bill.serviceCharge || 0} 
+                              onChange={(e) => setEditBillDetails({...editBillDetails, serviceCharge: Number(e.target.value)})} 
+                            />
+                          </div>
+                          <div className="form-group" style={{marginRight: '20px', minWidth: '200px'}}>
+                            <label>Customer:</label>
+                            <input 
+                              type="text" 
+                              className="form-control" 
+                              value={editBillDetails.customer || (typeof bill.customer === 'object' ? bill.customer.name : bill.customer) || ''} 
+                              onChange={(e) => setEditBillDetails({...editBillDetails, customer: e.target.value})} 
+                            />
+                          </div>
+                          <div className="form-group" style={{width: '100%'}}>
+                            <label>Notes:</label>
+                            <textarea 
+                              className="form-control" 
+                              value={editBillDetails.notes || bill.notes || ''} 
+                              onChange={(e) => setEditBillDetails({...editBillDetails, notes: e.target.value})} 
+                              style={{minHeight: '80px'}}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     ) : (
                       <ul style={{paddingLeft: 16}}>
                         {bill.products.map((line, idx) => (
@@ -284,7 +404,7 @@ const Bills = () => {
                     ) : (
                       <div style={{display: 'flex', gap: '8px'}}>
                         <button className="btn btn-sm btn-info mr-2" onClick={() => handleEdit(bill)}>Edit</button>
-                        <button className="btn btn-sm btn-primary mr-2" onClick={() => setViewingBill(bill)}>View Bill</button>
+                        <button className="btn btn-sm btn-primary mr-2" onClick={() => openBillInNewWindow(bill)}>View Bill</button>
                         <button className="btn btn-sm btn-danger" onClick={() => handleDelete(bill._id)}>Delete</button>
                       </div>
                     )}
@@ -439,7 +559,7 @@ const Bills = () => {
                       tableRows.push(itemData);
                     });
                     
-                    doc.autoTable({
+                    autoTable(doc, {
                       head: [tableColumn],
                       body: tableRows,
                       startY: 70,
