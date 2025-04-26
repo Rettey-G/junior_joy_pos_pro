@@ -99,67 +99,90 @@ const Invoice = () => {
   };
   
   const exportToPDF = () => {
-    const doc = new jsPDF();
-    
-    // Add logo
     try {
+      const doc = new jsPDF();
+      
+      // Add business logo and info
       doc.setFontSize(20);
       doc.setTextColor(25, 118, 210); // #1976d2
       doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+      
       doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0); // Black
+      doc.setTextColor(0, 0, 0);
+      doc.text('Professional Point of Sale System', 105, 28, { align: 'center' });
+      
+      // Add invoice details
+      doc.setFontSize(14);
+      doc.text('INVOICE', 105, 40, { align: 'center' });
+      
+      doc.setFontSize(10);
+      doc.text(`Bill No: ${inv.billNumber}`, 20, 50);
+      doc.text(`Date: ${inv.date}`, 20, 55);
+      doc.text(`Customer: ${safeRender(inv.customer)}`, 20, 60);
+      doc.text(`Cashier: ${safeRender(inv.cashier)}`, 20, 65);
+      doc.text(`Payment Method: ${inv.paymentMethod || 'Cash'}`, 20, 70);
+      
+      // Add products table
+      const tableColumn = ["Item", "Qty", "Price", "Total"];
+      const tableRows = [];
+      
+      inv.items.forEach(item => {
+        const itemData = [
+          safeRender(item.name || item.product?.name || 'Unknown Item'),
+          item.quantity,
+          formatCurrency(item.price),
+          formatCurrency(item.price * item.quantity)
+        ];
+        tableRows.push(itemData);
+      });
+      
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 75,
+        theme: 'grid',
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [25, 118, 210] }
+      });
+      
+      // Add totals
+      const finalY = doc.lastAutoTable.finalY + 10;
+      
+      doc.text(`Subtotal:`, 130, finalY);
+      doc.text(formatCurrency(inv.subtotal), 170, finalY, { align: 'right' });
+      
+      doc.text(`GST:`, 130, finalY + 5);
+      doc.text(formatCurrency(inv.gst), 170, finalY + 5, { align: 'right' });
+      
+      doc.text(`Service Charge:`, 130, finalY + 10);
+      doc.text(formatCurrency(inv.serviceCharge), 170, finalY + 10, { align: 'right' });
+      
+      doc.text(`Discount:`, 130, finalY + 15);
+      doc.text(formatCurrency(inv.discount), 170, finalY + 15, { align: 'right' });
+      
+      doc.setFontSize(12);
+      doc.text(`Total:`, 130, finalY + 22);
+      doc.text(formatCurrency(inv.total), 170, finalY + 22, { align: 'right' });
+      
+      doc.setFontSize(10);
+      doc.text(`Amount Paid:`, 130, finalY + 30);
+      doc.text(formatCurrency(inv.paid), 170, finalY + 30, { align: 'right' });
+      
+      doc.text(`Change:`, 130, finalY + 35);
+      doc.text(formatCurrency(inv.change), 170, finalY + 35, { align: 'right' });
+      
+      // Add footer
+      doc.setFontSize(10);
+      doc.text('Thank you for your business!', 105, finalY + 50, { align: 'center' });
+      doc.setFontSize(8);
+      doc.text('Please keep this invoice for your records.', 105, finalY + 55, { align: 'center' });
+      
+      // Save the PDF with a timestamp to ensure uniqueness
+      doc.save(`Invoice-${inv.billNumber}-${new Date().getTime()}.pdf`);
     } catch (err) {
-      console.error('Error adding logo to PDF:', err);
+      console.error('Error generating PDF:', err);
+      alert('Failed to generate PDF. Please try again.');
     }
-    
-    // Add invoice details
-    doc.setFontSize(16);
-    doc.text('INVOICE', 105, 30, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text(`Bill #: ${inv.billNumber}`, 14, 40);
-    doc.text(`Date: ${inv.date}`, 14, 45);
-    doc.text(`Customer: ${inv.customer}`, 14, 50);
-    doc.text(`Cashier: ${inv.cashier}`, 14, 55);
-    
-    // Add items table
-    const tableColumn = ["Item", "Qty", "Price", "Total"];
-    const tableRows = [];
-    
-    inv.items.forEach(item => {
-      const itemData = [
-        item.name || item.product?.name || 'Unknown Item',
-        item.quantity,
-        formatCurrency(item.price),
-        formatCurrency(item.price * item.quantity)
-      ];
-      tableRows.push(itemData);
-    });
-    
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 60,
-      theme: 'grid',
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [25, 118, 210] }
-    });
-    
-    // Add summary
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.text(`Subtotal: ${formatCurrency(inv.subtotal)}`, 140, finalY);
-    doc.text(`GST (16%): ${formatCurrency(inv.gst)}`, 140, finalY + 5);
-    doc.text(`Service Charge (10%): ${formatCurrency(inv.serviceCharge)}`, 140, finalY + 10);
-    doc.text(`Discount: ${formatCurrency(inv.discount)}`, 140, finalY + 15);
-    doc.text(`Total: ${formatCurrency(inv.total)}`, 140, finalY + 20);
-    doc.text(`Amount Paid: ${formatCurrency(inv.paid)}`, 140, finalY + 25);
-    doc.text(`Change: ${formatCurrency(inv.change)}`, 140, finalY + 30);
-    
-    // Add footer
-    doc.setFontSize(8);
-    doc.text('Thank you for your business!', 105, finalY + 40, { align: 'center' });
-    
-    // Save the PDF
-    doc.save(`Invoice-${inv.billNumber}.pdf`);
   };
 
   // Use the fetched invoice or fall back to sample

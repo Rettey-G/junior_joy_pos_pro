@@ -10,6 +10,7 @@ import SalesReports from './SalesReports.js';
 import Invoice from './Invoice.js';
 import NewInvoice from './NewInvoice.js';
 import Users from './Users.js';
+import Invoices from './Invoices.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 import { safeRender } from './utils';
 import './styles.css';
@@ -71,16 +72,16 @@ const Navigation = ({ onNavigate, currentPage }) => {
                 Sales Reports
               </button>
               <button 
+                onClick={() => onNavigate('invoices')}
+                className={`nav-button ${currentPage === 'invoices' ? 'active' : ''}`}
+              >
+                Invoices
+              </button>
+              <button 
                 onClick={() => onNavigate('invoice')}
                 className={`nav-button ${currentPage === 'invoice' ? 'active' : ''}`}
               >
                 Latest Invoice
-              </button>
-              <button 
-                onClick={() => onNavigate('newinvoice')}
-                className={`nav-button ${currentPage === 'newinvoice' ? 'active' : ''}`}
-              >
-                New Invoice
               </button>
               <button 
                 onClick={() => onNavigate('dashboard')}
@@ -171,10 +172,10 @@ const MainApp = () => {
         return <Employees />;
       case 'reports':
         return <SalesReports />;
+      case 'invoices':
+        return <Invoices />;
       case 'invoice':
         return <Invoice />;
-      case 'newinvoice':
-        return <NewInvoice />;
       case 'dashboard':
         return <Dashboard isAuthenticated={isAuthenticated} />;
       case 'users':

@@ -221,82 +221,98 @@ const Sales = () => {
   };
 
   const printBill = () => {
+    // Add a class to the body for print-specific styling
+    document.body.classList.add('printing-bill');
+    
+    // Print the document
     window.print();
+    
+    // Remove the class after printing
+    setTimeout(() => {
+      document.body.classList.remove('printing-bill');
+    }, 500);
   };
 
   const generatePDF = () => {
-    if (!completedSale) return;
+    if (!completedSale) {
+      alert('No sale data available');
+      return;
+    }
     
-    const doc = new jsPDF();
-    
-    // Add business logo and info
-    doc.setFontSize(20);
-    doc.setTextColor(25, 118, 210); // #1976d2
-    doc.text('Junior Joy POS', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Professional Point of Sale System', 105, 28, { align: 'center' });
-    
-    // Add invoice details
-    doc.setFontSize(14);
-    doc.text('INVOICE', 105, 40, { align: 'center' });
-    
-    doc.setFontSize(10);
-    doc.text(`Bill No: ${completedSale.billNumber}`, 20, 50);
-    doc.text(`Date: ${new Date(completedSale.createdAt || Date.now()).toLocaleString()}`, 20, 55);
-    doc.text(`Customer: ${completedSale.customer}`, 20, 60);
-    doc.text(`Cashier: ${completedSale.cashier}`, 20, 65);
-    doc.text(`Payment Method: ${completedSale.paymentMethod || 'Cash'}`, 20, 70);
-    
-    // Add products table
-    const tableColumn = ["Item", "Qty", "Price", "Total"];
-    const tableRows = [];
-    
-    completedSale.products.forEach(item => {
-      const itemData = [
-        item.name,
-        item.quantity,
-        `MVR ${Number(item.price).toFixed(2)}`,
-        `MVR ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`
-      ];
-      tableRows.push(itemData);
-    });
-    
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 75,
-      theme: 'grid',
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [25, 118, 210] }
-    });
-    
-    // Add totals
-    const finalY = doc.lastAutoTable.finalY + 10;
-    
-    doc.text(`Subtotal:`, 130, finalY);
-    doc.text(`MVR ${completedSale.subtotal.toFixed(2)}`, 170, finalY, { align: 'right' });
-    
-    doc.text(`GST (16%):`, 130, finalY + 5);
-    doc.text(`MVR ${completedSale.gst.toFixed(2)}`, 170, finalY + 5, { align: 'right' });
-    
-    doc.text(`Service Charge (10%):`, 130, finalY + 10);
-    doc.text(`MVR ${completedSale.serviceCharge.toFixed(2)}`, 170, finalY + 10, { align: 'right' });
-    
-    doc.text(`Discount:`, 130, finalY + 15);
-    doc.text(`MVR ${completedSale.discount.toFixed(2)}`, 170, finalY + 15, { align: 'right' });
-    
-    doc.setFontSize(12);
-    doc.text(`Total:`, 130, finalY + 22);
-    doc.text(`MVR ${completedSale.total.toFixed(2)}`, 170, finalY + 22, { align: 'right' });
-    
-    doc.setFontSize(10);
-    doc.text(`Amount Paid:`, 130, finalY + 30);
-    doc.text(`MVR ${completedSale.amountPaid.toFixed(2)}`, 170, finalY + 30, { align: 'right' });
-    
-    doc.text(`Change:`, 130, finalY + 35);
-    doc.text(`MVR ${completedSale.change.toFixed(2)}`, 170, finalY + 35, { align: 'right' });
+    try {
+      const doc = new jsPDF();
+      
+      // Add business logo and info
+      doc.setFontSize(20);
+      doc.setTextColor(25, 118, 210); // #1976d2
+      doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+      
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Professional Point of Sale System', 105, 28, { align: 'center' });
+      
+      // Add invoice details
+      doc.setFontSize(14);
+      doc.text('INVOICE', 105, 40, { align: 'center' });
+      
+      doc.setFontSize(10);
+      doc.text(`Bill No: ${completedSale.billNumber}`, 20, 50);
+      doc.text(`Date: ${new Date(completedSale.createdAt || Date.now()).toLocaleString()}`, 20, 55);
+      doc.text(`Customer: ${safeRender(completedSale.customer)}`, 20, 60);
+      doc.text(`Cashier: ${safeRender(completedSale.cashier)}`, 20, 65);
+      doc.text(`Payment Method: ${safeRender(completedSale.paymentMethod || 'Cash')}`, 20, 70);
+      
+      // Add products table
+      const tableColumn = ["Item", "Qty", "Price", "Total"];
+      const tableRows = [];
+      
+      completedSale.products.forEach(item => {
+        const itemData = [
+          safeRender(item.name),
+          item.quantity,
+          `MVR ${Number(item.price).toFixed(2)}`,
+          `MVR ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`
+        ];
+        tableRows.push(itemData);
+      });
+      
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 75,
+        theme: 'grid',
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [25, 118, 210] }
+      });
+      
+      // Add totals
+      const finalY = doc.lastAutoTable.finalY + 10;
+      
+      doc.text(`Subtotal:`, 130, finalY);
+      doc.text(`MVR ${completedSale.subtotal.toFixed(2)}`, 170, finalY, { align: 'right' });
+      
+      doc.text(`GST (16%):`, 130, finalY + 5);
+      doc.text(`MVR ${completedSale.gst.toFixed(2)}`, 170, finalY + 5, { align: 'right' });
+      
+      doc.text(`Service Charge (10%):`, 130, finalY + 10);
+      doc.text(`MVR ${completedSale.serviceCharge.toFixed(2)}`, 170, finalY + 10, { align: 'right' });
+      
+      doc.text(`Discount:`, 130, finalY + 15);
+      doc.text(`MVR ${completedSale.discount.toFixed(2)}`, 170, finalY + 15, { align: 'right' });
+      
+      doc.setFontSize(12);
+      doc.text(`Total:`, 130, finalY + 22);
+      doc.text(`MVR ${completedSale.total.toFixed(2)}`, 170, finalY + 22, { align: 'right' });
+      
+      doc.setFontSize(10);
+      doc.text(`Amount Paid:`, 130, finalY + 30);
+      doc.text(`MVR ${completedSale.amountPaid.toFixed(2)}`, 170, finalY + 30, { align: 'right' });
+      
+      doc.text(`Change:`, 130, finalY + 35);
+      doc.text(`MVR ${completedSale.change.toFixed(2)}`, 170, finalY + 35, { align: 'right' });
+      
+      // Save the PDF with a proper filename
+      doc.save(`Bill-${completedSale.billNumber}-${new Date().getTime()}.pdf`);
     
     // Add footer
     doc.setFontSize(10);
@@ -324,45 +340,43 @@ const Sales = () => {
             <div style={{flex: 2, minWidth: 200}}>
               <label className="form-label">Search Products</label>
               <input className="form-control" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by name, code, or category..." />
-              <div className="row mt-4">
-                <div className="col-md-8">
-                  <div className="card">
-                    <div className="card-header bg-primary text-white">
-                      <h5 className="mb-0">Products</h5>
+              <div className="product-container" style={{ width: '100%', height: '400px', overflow: 'auto' }}>
+                <div className="card">
+                  <div className="card-header bg-primary text-white">
+                    <h5 className="mb-0">Products</h5>
+                  </div>
+                  <div className="card-body">
+                    <div className="form-group mb-3">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
                     </div>
-                    <div className="card-body">
-                      <div className="form-group mb-3">
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Search products..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                    
+                    {loading ? (
+                      <div className="text-center">
+                        <div className="spinner-border" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
                       </div>
-                      
-                      {loading ? (
-                        <div className="text-center">
-                          <div className="spinner-border" role="status">
-                            <span className="sr-only">Loading...</span>
+                    ) : error ? (
+                      <div className="alert alert-danger">{error}</div>
+                    ) : filteredProducts.length === 0 ? (
+                      <div className="alert alert-info">No products found</div>
+                    ) : (
+                      <div className="product-grid" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                        {filteredProducts.map(product => (
+                          <div key={product._id} className="product-card" onClick={() => addToCart(product)}>
+                            <div className="product-name">{product.name}</div>
+                            <div className="product-price">{formatCurrency(product.price)}</div>
+                            <div className="product-stock">Stock: {product.stock}</div>
                           </div>
-                        </div>
-                      ) : error ? (
-                        <div className="alert alert-danger">{error}</div>
-                      ) : filteredProducts.length === 0 ? (
-                        <div className="alert alert-info">No products found</div>
-                      ) : (
-                        <div className="product-grid" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                          {filteredProducts.map(product => (
-                            <div key={product._id} className="product-card" onClick={() => addToCart(product)}>
-                              <div className="product-name">{product.name}</div>
-                              <div className="product-price">{formatCurrency(product.price)}</div>
-                              <div className="product-stock">Stock: {product.stock}</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
