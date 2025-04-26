@@ -20,7 +20,15 @@ const Navigation = ({ onNavigate, currentPage }) => {
     <nav className="navbar fixed-navbar">
       <div className="container navbar-container">
         <div className="navbar-brand">
-          <img src="/images/juniorjoy.jpg" alt="Junior Joy Logo" className="navbar-logo" />
+          <img 
+            src="https://i.imgur.com/8bGJQem.png" 
+            alt="Junior Joy Logo" 
+            className="navbar-logo" 
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';            
+            }}
+          />
           Junior Joy POS
         </div>
         

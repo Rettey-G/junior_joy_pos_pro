@@ -89,10 +89,11 @@ p {
 .navbar {
   background-color: var(--primary-color);
   color: white;
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-xs) var(--spacing-lg); /* Further reduced vertical padding */
   box-shadow: var(--shadow);
   margin-bottom: var(--spacing-xl);
   position: relative;
+  height: 70px; /* Fixed height for the navbar */
 }
 
 .fixed-navbar {
@@ -105,7 +106,7 @@ p {
 }
 
 body {
-  padding-top: 72px; /* Adjust if navbar height changes */
+  padding-top: 100px; /* Increased to prevent content from being hidden */
 }
 
 .navbar-container {
@@ -125,11 +126,13 @@ body {
 }
 
 .navbar-logo {
-  width: 40px;
-  height: 40px;
+  width: 80px; /* Increased logo size */
+  height: 80px; /* Increased logo size */
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid white;
+  border: 3px solid white;
+  margin-right: 10px;
+  box-shadow: 0 2px 8px rgba(255,255,255,0.2);
 }
 
 .navbar-welcome {

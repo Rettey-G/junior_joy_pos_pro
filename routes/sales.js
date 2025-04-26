@@ -7,53 +7,85 @@ const { auth } = require('../middleware/auth');
 // Create a new sale
 router.post('/', auth, async (req, res) => {
   try {
-    const { products, paymentMethod, customer, notes } = req.body;
+    const { 
+      billNumber, 
+      products, 
+      subtotal,
+      gst,
+      serviceCharge,
+      discount,
+      total,
+      paymentMethod, 
+      amountPaid,
+      change,
+      customer, 
+      cashier,
+      status,
+      notes 
+    } = req.body;
     
-    // Calculate total and update product quantities
-    let total = 0;
-    const saleProducts = [];
+    // Validate required fields
+    if (!billNumber || !products || !Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ message: 'Bill number and products are required' });
+    }
+    
+    // Check if bill number already exists
+    const existingBill = await Sale.findOne({ billNumber });
+    if (existingBill) {
+      return res.status(400).json({ message: 'Bill number already exists' });
+    }
     
     // Process each product in the sale
+    const saleProducts = [];
+    
     for (const item of products) {
-      const product = await Product.findById(item.product);
-      
-      if (!product) {
-        return res.status(404).json({ message: `Product with ID ${item.product} not found` });
-      }
-      
-      // Check if enough stock
-      if (product.stock < item.quantity) {
-        return res.status(400).json({ 
-          message: `Not enough stock for ${product.name}. Available: ${product.stock}` 
-        });
-      }
-      
-      // Calculate subtotal
-      const subtotal = product.price * item.quantity;
-      total += subtotal;
-      
       // Add to sale products array
       saleProducts.push({
-        product: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: item.quantity,
-        subtotal
+        product: item.product,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity
       });
       
-      // Update product stock
-      product.stock -= item.quantity;
-      await product.save();
+      // Update product stock if product ID is provided
+      if (item.product) {
+        try {
+          const product = await Product.findById(item.product);
+          if (product) {
+            // Check if enough stock
+            if (product.stock < item.quantity) {
+              return res.status(400).json({ 
+                message: `Not enough stock for ${product.name}. Available: ${product.stock}` 
+              });
+            }
+            
+            // Update product stock
+            product.stock -= item.quantity;
+            await product.save();
+          }
+        } catch (err) {
+          console.error(`Error updating product ${item.product}: ${err.message}`);
+          // Continue with sale even if product update fails
+        }
+      }
     }
     
     // Create the sale
     const sale = new Sale({
+      billNumber,
       products: saleProducts,
-      total,
-      paymentMethod: paymentMethod || 'cash',
-      cashier: req.user.id,
-      customer,
-      notes
+      subtotal: Number(subtotal) || 0,
+      gst: Number(gst) || 0,
+      serviceCharge: Number(serviceCharge) || 0,
+      discount: Number(discount) || 0,
+      total: Number(total) || 0,
+      paymentMethod: paymentMethod || 'Cash',
+      amountPaid: Number(amountPaid) || 0,
+      change: Number(change) || 0,
+      cashier: cashier || req.user.name || req.user.id,
+      customer: customer || 'Walk-in Customer',
+      status: status || 'Completed',
+      notes: notes || ''
     });
     
     await sale.save();

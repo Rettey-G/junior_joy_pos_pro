@@ -36,12 +36,31 @@ const Invoice = () => {
       if (response && response.data && response.data.sales && response.data.sales.length > 0) {
         const latestSale = response.data.sales[0];
         
+        // Process customer and cashier data to handle both string and object formats
+        let customerName = 'Walk-in Customer';
+        if (latestSale.customer) {
+          if (typeof latestSale.customer === 'object') {
+            customerName = latestSale.customer.name || 'Walk-in Customer';
+          } else {
+            customerName = String(latestSale.customer);
+          }
+        }
+        
+        let cashierName = 'Staff';
+        if (latestSale.cashier) {
+          if (typeof latestSale.cashier === 'object') {
+            cashierName = latestSale.cashier.name || 'Staff';
+          } else {
+            cashierName = String(latestSale.cashier);
+          }
+        }
+        
         // Format the data for invoice display
         setInvoice({
           billNumber: latestSale.billNumber || 'N/A',
           date: latestSale.createdAt ? new Date(latestSale.createdAt).toLocaleString() : new Date().toLocaleString(),
-          customer: latestSale.customer || 'Walk-in Customer',
-          cashier: latestSale.cashier || 'Staff',
+          customer: customerName,
+          cashier: cashierName,
           items: latestSale.products || [],
           subtotal: latestSale.subtotal || 0,
           gst: latestSale.gst || 0,
@@ -113,7 +132,15 @@ const Invoice = () => {
               <h2 style={{color: '#1976d2', marginBottom: 0}}>Junior Joy POS</h2>
               <p style={{margin: '4px 0 0 0', color: '#666'}}>Professional Point of Sale System</p>
             </div>
-            <img src="/images/juniorjoy.jpg" alt="Junior Joy Logo" style={{width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', border: '2px solid #bbdefb'}} />
+            <img 
+              src="https://i.imgur.com/8bGJQem.png" 
+              alt="Junior Joy Logo" 
+              style={{width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid #bbdefb', boxShadow: '0 2px 8px rgba(33,150,243,0.15)'}} 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';              
+              }}
+            />
           </div>
           
           <div style={{textAlign: 'center', marginBottom: 24}}>

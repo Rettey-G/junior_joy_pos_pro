@@ -23,9 +23,26 @@ const Dashboard = () => {
       try {
         let response;
         if (reportPeriod === 'custom') {
+          // Ensure dates are valid
+          if (!customDates.startDate || !customDates.endDate) {
+            throw new Error('Please select valid start and end dates');
+          }
           response = await getSalesReport(reportPeriod, customDates.startDate, customDates.endDate);
         } else {
-          response = await getSalesReport(reportPeriod);
+          // Use a try-catch block specifically for the API call
+          try {
+            response = await getSalesReport(reportPeriod);
+          } catch (apiError) {
+            console.error('API Error:', apiError);
+            // Create a fallback response with empty data
+            response = {
+              data: {
+                summary: { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
+                sales: [],
+                productSales: []
+              }
+            };
+          }
         }
         
         // Process the data to ensure all values are of the correct type

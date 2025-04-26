@@ -29,12 +29,37 @@ router.get('/:id', auth, async (req, res) => {
 // Create employee
 router.post('/', auth, async (req, res) => {
   try {
-    const { name, salary, position } = req.body;
+    const { 
+      name, 
+      salaryMVR, 
+      position, 
+      gender, 
+      phone, 
+      email, 
+      hireDate, 
+      dateOfBirth, 
+      pictureUrl 
+    } = req.body;
+    
+    // Handle backward compatibility with old field name
+    const salary = salaryMVR || req.body.salary;
+    
+    if (!name || !salary) {
+      return res.status(400).json({ message: 'Name and salary are required' });
+    }
+    
     const employee = new Employee({
       name,
-      salary,
-      position: position || 'Staff'
+      salaryMVR: salary,
+      position: position || 'Staff',
+      gender: gender || 'Male',
+      phone: phone || '',
+      email: email || '',
+      hireDate: hireDate || new Date(),
+      dateOfBirth: dateOfBirth || null,
+      pictureUrl: pictureUrl || ''
     });
+    
     const savedEmployee = await employee.save();
     res.status(201).json(savedEmployee);
   } catch (error) {
@@ -45,12 +70,32 @@ router.post('/', auth, async (req, res) => {
 // Update employee
 router.patch('/:id', auth, async (req, res) => {
   try {
-    const { name, salary, position } = req.body;
+    const { 
+      name, 
+      salaryMVR, 
+      position, 
+      gender, 
+      phone, 
+      email, 
+      hireDate, 
+      dateOfBirth, 
+      pictureUrl 
+    } = req.body;
+    
     const updateData = {};
     
+    // Handle backward compatibility with old field name
+    const salary = salaryMVR || req.body.salary;
+    
     if (name) updateData.name = name;
-    if (salary !== undefined) updateData.salary = salary;
+    if (salary !== undefined) updateData.salaryMVR = salary;
     if (position) updateData.position = position;
+    if (gender) updateData.gender = gender;
+    if (phone !== undefined) updateData.phone = phone;
+    if (email !== undefined) updateData.email = email;
+    if (hireDate) updateData.hireDate = hireDate;
+    if (dateOfBirth) updateData.dateOfBirth = dateOfBirth;
+    if (pictureUrl !== undefined) updateData.pictureUrl = pictureUrl;
     
     const employee = await Employee.findByIdAndUpdate(
       req.params.id,

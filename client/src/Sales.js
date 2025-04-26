@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext.js';
 import api from './api';
+import { safeRender, formatCurrency } from './utils';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import './styles.css';
 
 const Sales = () => {
@@ -16,6 +19,7 @@ const Sales = () => {
   const [showBill, setShowBill] = useState(false);
   const [completedSale, setCompletedSale] = useState(null);
   const [amountPaid, setAmountPaid] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
   
   // Constants for tax and service charge
   const GST_RATE = 0.16; // 16%
@@ -151,7 +155,7 @@ const Sales = () => {
         serviceCharge: calculateServiceCharge(),
         discount: calculateDiscount(),
         total: calculateTotal(),
-        paymentMethod: 'Cash',
+        paymentMethod: paymentMethod,
         amountPaid: parseFloat(amountPaid) || 0,
         change: calculateChange(),
         cashier: user.name,
@@ -179,7 +183,9 @@ const Sales = () => {
           // Ensure cashier is a string
           cashier: String(response.data.cashier || ''),
           // Ensure products is an array
-          products: Array.isArray(response.data.products) ? response.data.products : []
+          products: Array.isArray(response.data.products) ? response.data.products : [],
+          // Ensure payment method is a string
+          paymentMethod: String(response.data.paymentMethod || 'Cash')
         };
         setCompletedSale(processedSale);
       }
@@ -192,6 +198,7 @@ const Sales = () => {
       setCustomerName('');
       setDiscount(0);
       setAmountPaid('');
+      setPaymentMethod('Cash');
       
       // Generate new bill number for next sale
       generateBillNumber();
@@ -203,6 +210,90 @@ const Sales = () => {
 
   const printBill = () => {
     window.print();
+  };
+
+  const generatePDF = () => {
+    if (!completedSale) return;
+    
+    const doc = new jsPDF();
+    
+    // Add business logo and info
+    doc.setFontSize(20);
+    doc.setTextColor(25, 118, 210); // #1976d2
+    doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Professional Point of Sale System', 105, 28, { align: 'center' });
+    
+    // Add invoice details
+    doc.setFontSize(14);
+    doc.text('INVOICE', 105, 40, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.text(`Bill No: ${completedSale.billNumber}`, 20, 50);
+    doc.text(`Date: ${new Date(completedSale.createdAt || Date.now()).toLocaleString()}`, 20, 55);
+    doc.text(`Customer: ${completedSale.customer}`, 20, 60);
+    doc.text(`Cashier: ${completedSale.cashier}`, 20, 65);
+    doc.text(`Payment Method: ${completedSale.paymentMethod || 'Cash'}`, 20, 70);
+    
+    // Add products table
+    const tableColumn = ["Item", "Qty", "Price", "Total"];
+    const tableRows = [];
+    
+    completedSale.products.forEach(item => {
+      const itemData = [
+        item.name,
+        item.quantity,
+        `MVR ${Number(item.price).toFixed(2)}`,
+        `MVR ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`
+      ];
+      tableRows.push(itemData);
+    });
+    
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 75,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [25, 118, 210] }
+    });
+    
+    // Add totals
+    const finalY = doc.lastAutoTable.finalY + 10;
+    
+    doc.text(`Subtotal:`, 130, finalY);
+    doc.text(`MVR ${completedSale.subtotal.toFixed(2)}`, 170, finalY, { align: 'right' });
+    
+    doc.text(`GST (16%):`, 130, finalY + 5);
+    doc.text(`MVR ${completedSale.gst.toFixed(2)}`, 170, finalY + 5, { align: 'right' });
+    
+    doc.text(`Service Charge (10%):`, 130, finalY + 10);
+    doc.text(`MVR ${completedSale.serviceCharge.toFixed(2)}`, 170, finalY + 10, { align: 'right' });
+    
+    doc.text(`Discount:`, 130, finalY + 15);
+    doc.text(`MVR ${completedSale.discount.toFixed(2)}`, 170, finalY + 15, { align: 'right' });
+    
+    doc.setFontSize(12);
+    doc.text(`Total:`, 130, finalY + 22);
+    doc.text(`MVR ${completedSale.total.toFixed(2)}`, 170, finalY + 22, { align: 'right' });
+    
+    doc.setFontSize(10);
+    doc.text(`Amount Paid:`, 130, finalY + 30);
+    doc.text(`MVR ${completedSale.amountPaid.toFixed(2)}`, 170, finalY + 30, { align: 'right' });
+    
+    doc.text(`Change:`, 130, finalY + 35);
+    doc.text(`MVR ${completedSale.change.toFixed(2)}`, 170, finalY + 35, { align: 'right' });
+    
+    // Add footer
+    doc.setFontSize(10);
+    doc.text('Thank you for your business!', 105, finalY + 50, { align: 'center' });
+    doc.setFontSize(8);
+    doc.text('Please keep this invoice for your records.', 105, finalY + 55, { align: 'center' });
+    
+    // Save the PDF
+    doc.save(`Invoice-${completedSale.billNumber}.pdf`);
   };
 
   if (loading) return <div className="text-center mt-4">Loading products...</div>;
@@ -260,6 +351,18 @@ const Sales = () => {
               <input className="form-control" type="number" min={0} max={100} value={discount} onChange={e => setDiscount(Number(e.target.value))} />
             </div>
             <div style={{flex: 1, minWidth: 180}}>
+              <label className="form-label">Payment Method</label>
+              <select 
+                className="form-control" 
+                value={paymentMethod} 
+                onChange={e => setPaymentMethod(e.target.value)}
+              >
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+              </select>
+            </div>
+            <div style={{flex: 1, minWidth: 180}}>
               <label className="form-label">Amount Paid</label>
               <input className="form-control" type="number" min={0} value={amountPaid} onChange={e => setAmountPaid(e.target.value)} />
             </div>
@@ -272,7 +375,14 @@ const Sales = () => {
             <div className="total-row grand-total"><span>Total:</span> <span>MVR {calculateTotal().toFixed(2)}</span></div>
             <div className="total-row"><span>Change:</span> <span>MVR {calculateChange().toFixed(2)}</span></div>
           </div>
-          <button className="btn btn-primary" style={{marginTop: 16, minWidth: 160}} onClick={handleCheckout}>Complete Sale & Generate Bill</button>
+          <button 
+            className="btn btn-primary" 
+            style={{marginTop: 16, minWidth: 160}} 
+            onClick={handleCheckout}
+            disabled={cart.length === 0 || !customerName.trim() || parseFloat(amountPaid) < calculateTotal()}
+          >
+            Complete Sale & Generate Bill
+          </button>
         </div>
       </div>
       
@@ -280,11 +390,42 @@ const Sales = () => {
       {showBill && completedSale && (
         <div className="bill-container" style={{marginTop: 32, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(33,150,243,0.08)', padding: 24, maxWidth: 600, margin: '32px auto'}}>
           <div className="bill-header" style={{marginBottom: 24}}>
-            <h2 style={{color: '#1976d2'}}>Junior Joy POS</h2>
-            <div style={{fontSize: '1.1rem', marginTop: 8}}>Bill No: {completedSale.billNumber}</div>
-            <div style={{fontSize: '1.1rem'}}>Customer: {completedSale.customer}</div>
-            <div style={{fontSize: '1.1rem'}}>Cashier: {completedSale.cashier}</div>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+              <div>
+                <h2 style={{color: '#1976d2', margin: 0}}>Junior Joy POS</h2>
+                <p style={{margin: '4px 0 0 0', color: '#666'}}>Professional Point of Sale System</p>
+              </div>
+              <img 
+                src="https://i.imgur.com/8bGJQem.png" 
+                alt="Junior Joy Logo" 
+                style={{width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid #bbdefb', boxShadow: '0 2px 8px rgba(33,150,243,0.15)'}} 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';              
+                }}
+              />
+            </div>
+            <div style={{fontSize: '1.1rem', marginTop: 16, textAlign: 'center', fontWeight: 'bold'}}>INVOICE</div>
+            <div style={{marginTop: 8, textAlign: 'center'}}>Bill No: {completedSale.billNumber}</div>
+            <div style={{textAlign: 'center'}}>Date: {new Date(completedSale.createdAt || Date.now()).toLocaleString()}</div>
           </div>
+          
+          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 16}}>
+            <div>
+              <div style={{fontWeight: 'bold', marginBottom: 4}}>Customer:</div>
+              <div>{safeRender(completedSale.customer)}</div>
+            </div>
+            <div>
+              <div style={{fontWeight: 'bold', marginBottom: 4}}>Cashier:</div>
+              <div>{safeRender(completedSale.cashier)}</div>
+            </div>
+          </div>
+          
+          <div style={{marginBottom: 8}}>
+            <div style={{fontWeight: 'bold', marginBottom: 4}}>Payment Method:</div>
+            <div>{safeRender(completedSale.paymentMethod || 'Cash')}</div>
+          </div>
+          
           <table className="table" style={{marginBottom: 24}}>
             <thead>
               <tr>
@@ -297,10 +438,10 @@ const Sales = () => {
             <tbody>
               {completedSale.products.map((item, idx) => (
                 <tr key={idx}>
-                  <td>{item.name}</td>
+                  <td>{safeRender(item.name)}</td>
                   <td>{item.quantity}</td>
-                  <td>MVR {item.price.toFixed(2)}</td>
-                  <td>MVR {(item.price * item.quantity).toFixed(2)}</td>
+                  <td>MVR {Number(item.price).toFixed(2)}</td>
+                  <td>MVR {(Number(item.price) * Number(item.quantity)).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -314,9 +455,20 @@ const Sales = () => {
             <div className="total-row"><span>Paid:</span> <span>MVR {completedSale.amountPaid.toFixed(2)}</span></div>
             <div className="total-row"><span>Change:</span> <span>MVR {completedSale.change.toFixed(2)}</span></div>
           </div>
+          <div style={{marginTop: 24, textAlign: 'center'}}>
+            <div style={{fontWeight: 'bold', marginBottom: 4}}>Thank you for your business!</div>
+            <div style={{fontSize: '0.9rem', color: '#666'}}>Please keep this invoice for your records.</div>
+          </div>
           <div style={{display: 'flex', justifyContent: 'center', gap: 16, marginTop: 24}}>
-            <button className="btn btn-primary" style={{minWidth: 160}} onClick={printBill}>Print Bill</button>
-            <button className="btn btn-secondary" style={{minWidth: 160}} onClick={() => setShowBill(false)}>New Sale</button>
+            <button className="btn btn-primary" style={{minWidth: 120}} onClick={printBill}>
+              Print Bill
+            </button>
+            <button className="btn btn-success" style={{minWidth: 120}} onClick={generatePDF}>
+              Save as PDF
+            </button>
+            <button className="btn btn-secondary" style={{minWidth: 120}} onClick={() => setShowBill(false)}>
+              New Sale
+            </button>
           </div>
         </div>
       )}

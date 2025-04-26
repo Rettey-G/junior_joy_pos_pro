@@ -129,8 +129,16 @@ const Bills = () => {
                 <tr key={bill._id}>
                   <td>{safeRender(bill.billNumber)}</td>
                   <td>{bill.createdAt ? new Date(bill.createdAt).toLocaleString() : ''}</td>
-                  <td>{safeRender(bill.customer)}</td>
-                  <td>{safeRender(bill.cashier)}</td>
+                  <td>
+                    {typeof bill.customer === 'object' ? 
+                      safeRender(bill.customer.name) : 
+                      safeRender(bill.customer)}
+                  </td>
+                  <td>
+                    {typeof bill.cashier === 'object' ? 
+                      safeRender(bill.cashier.name) : 
+                      safeRender(bill.cashier)}
+                  </td>
                   <td>
                     {editingBillId === bill._id ? (
                       <table className="table table-sm" style={{background: '#f9f9f9'}}>
