@@ -59,8 +59,16 @@ const SalesReports = () => {
 
   useEffect(() => {
     fetchReport();
+    
+    // Set up automatic refresh every 30 seconds
+    const refreshInterval = setInterval(() => {
+      fetchReport();
+    }, 30000); // 30 seconds
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(refreshInterval);
     // eslint-disable-next-line
-  }, [period]);
+  }, [period, startDate, endDate, reportType]);
 
   const fetchReport = async () => {
     setLoading(true);

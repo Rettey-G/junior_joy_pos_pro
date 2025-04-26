@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getSales } from './api';
 import { safeRender, formatCurrency } from './utils';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import './styles.css';
 
 // Fallback sample invoice in case no data is available
@@ -92,6 +94,74 @@ const Invoice = () => {
     window.print();
   };
 
+  const handleRefresh = () => {
+    fetchLatestInvoice();
+  };
+  
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add logo
+    try {
+      doc.setFontSize(20);
+      doc.setTextColor(25, 118, 210); // #1976d2
+      doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0); // Black
+    } catch (err) {
+      console.error('Error adding logo to PDF:', err);
+    }
+    
+    // Add invoice details
+    doc.setFontSize(16);
+    doc.text('INVOICE', 105, 30, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text(`Bill #: ${inv.billNumber}`, 14, 40);
+    doc.text(`Date: ${inv.date}`, 14, 45);
+    doc.text(`Customer: ${inv.customer}`, 14, 50);
+    doc.text(`Cashier: ${inv.cashier}`, 14, 55);
+    
+    // Add items table
+    const tableColumn = ["Item", "Qty", "Price", "Total"];
+    const tableRows = [];
+    
+    inv.items.forEach(item => {
+      const itemData = [
+        item.name || item.product?.name || 'Unknown Item',
+        item.quantity,
+        formatCurrency(item.price),
+        formatCurrency(item.price * item.quantity)
+      ];
+      tableRows.push(itemData);
+    });
+    
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 60,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [25, 118, 210] }
+    });
+    
+    // Add summary
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.text(`Subtotal: ${formatCurrency(inv.subtotal)}`, 140, finalY);
+    doc.text(`GST (16%): ${formatCurrency(inv.gst)}`, 140, finalY + 5);
+    doc.text(`Service Charge (10%): ${formatCurrency(inv.serviceCharge)}`, 140, finalY + 10);
+    doc.text(`Discount: ${formatCurrency(inv.discount)}`, 140, finalY + 15);
+    doc.text(`Total: ${formatCurrency(inv.total)}`, 140, finalY + 20);
+    doc.text(`Amount Paid: ${formatCurrency(inv.paid)}`, 140, finalY + 25);
+    doc.text(`Change: ${formatCurrency(inv.change)}`, 140, finalY + 30);
+    
+    // Add footer
+    doc.setFontSize(8);
+    doc.text('Thank you for your business!', 105, finalY + 40, { align: 'center' });
+    
+    // Save the PDF
+    doc.save(`Invoice-${inv.billNumber}.pdf`);
+  };
+
   // Use the fetched invoice or fall back to sample
   const inv = invoice || sampleInvoice;
 
@@ -99,20 +169,23 @@ const Invoice = () => {
     <div className="invoice-container">
       <div className="invoice-header" style={{marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
         <h2 style={{color: '#1976d2', marginBottom: 0}}>Invoice</h2>
-        <div>
+        <div className="invoice-actions">
           <button 
-            className="btn btn-primary" 
-            onClick={() => {
-              setLoading(true);
-              fetchLatestInvoice();
-            }}
-            style={{marginRight: 12}}
+            className="btn btn-secondary mr-2" 
+            onClick={handleRefresh}
             disabled={loading}
           >
-            Refresh
+            <i className="fa fa-refresh"></i> Refresh
           </button>
           <button 
-            className="btn btn-secondary" 
+            className="btn btn-success mr-2" 
+            onClick={exportToPDF}
+            disabled={loading}
+          >
+            <i className="fa fa-file-pdf-o"></i> Save as PDF
+          </button>
+          <button 
+            className="btn btn-primary" 
             onClick={handlePrint}
             disabled={loading}
           >

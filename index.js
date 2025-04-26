@@ -6,6 +6,7 @@ const productRoutes = require('./routes/products');
 const authRoutes = require('./routes/auth');
 const salesRoutes = require('./routes/sales');
 const employeesRoutes = require('./routes/employees');
+const usersRoutes = require('./routes/users');
 const { auth } = require('./middleware/auth');
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/employees', employeesRoutes);
+app.use('/api/users', usersRoutes);
 
 // Test route
 app.get('/', (req, res) => {

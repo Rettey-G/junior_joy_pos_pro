@@ -25,7 +25,7 @@ const auth = async (req, res, next) => {
 };
 
 // Middleware to check if user is admin
-const adminOnly = (req, res, next) => {
+const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
@@ -33,4 +33,4 @@ const adminOnly = (req, res, next) => {
   }
 };
 
-module.exports = { auth, adminOnly };
+module.exports = { auth, admin };

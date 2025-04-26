@@ -9,6 +9,7 @@ import Employees from './Employees.js';
 import SalesReports from './SalesReports.js';
 import Invoice from './Invoice.js';
 import NewInvoice from './NewInvoice.js';
+import Users from './Users.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 import { safeRender } from './utils';
 import './styles.css';
@@ -87,6 +88,14 @@ const Navigation = ({ onNavigate, currentPage }) => {
               >
                 Dashboard
               </button>
+              {isAdmin && (
+                <button 
+                  onClick={() => onNavigate('users')}
+                  className={`nav-button ${currentPage === 'users' ? 'active' : ''}`}
+                >
+                  Users
+                </button>
+              )}
               <button 
                 onClick={logout}
                 className="nav-button logout-button"
@@ -167,7 +176,9 @@ const MainApp = () => {
       case 'newinvoice':
         return <NewInvoice />;
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard isAuthenticated={isAuthenticated} />;
+      case 'users':
+        return <Users isAuthenticated={isAuthenticated} />;
       default:
         return <ProductManagement />;
     }

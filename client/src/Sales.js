@@ -35,11 +35,14 @@ const Sales = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await api.get('/api/products');
+      setLoading(true);
+      const response = await api.get('/api/products?limit=1000'); // Increase limit to get all products
       setProducts(response.data);
-      setLoading(false);
+      setError(null);
     } catch (err) {
-      setError('Failed to fetch products');
+      console.error('Error fetching products:', err);
+      setError('Failed to fetch products. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -57,11 +60,20 @@ const Sales = () => {
 
   // Filter products based on search term
   const filteredProducts = products.filter(product => {
+    if (!searchTerm) return true; // Show all products when no search term
+    
+    // Safe search that handles null/undefined values
+    const productName = (product.name || '').toLowerCase();
+    const productCode = (product.code || '').toLowerCase();
+    const productCategory = (product.category || '').toLowerCase();
+    const productDetails = (product.details || '').toLowerCase();
+    const searchLower = searchTerm.toLowerCase();
+    
     return (
-      product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.details?.toLowerCase().includes(searchTerm.toLowerCase())
+      productName.includes(searchLower) ||
+      productCode.includes(searchLower) ||
+      productCategory.includes(searchLower) ||
+      productDetails.includes(searchLower)
     );
   });
 

@@ -18,6 +18,12 @@ export const registerUser = (userData) => api.post('/api/auth/register', userDat
 export const loginUser = (credentials) => api.post('/api/auth/login', credentials);
 export const getCurrentUser = () => api.get('/api/auth/me');
 
+// User Management API functions
+export const getUsers = () => api.get('/api/users');
+export const createUser = (userData) => api.post('/api/users', userData);
+export const updateUser = (id, userData) => api.patch(`/api/users/${id}`, userData);
+export const deleteUser = (id) => api.delete(`/api/users/${id}`);
+
 // Product API functions
 export const getProducts = () => api.get('/api/products');
 export const getProduct = (id) => api.get(`/api/products/${id}`);
