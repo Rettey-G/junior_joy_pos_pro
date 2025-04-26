@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getSales, updateSale } from './api';
+import { safeRender, formatCurrency } from './utils';
 import './styles.css';
 
 const Bills = () => {
@@ -94,7 +95,17 @@ const Bills = () => {
 
   return (
     <div className="bills-page" style={{maxWidth: 1200, margin: '0 auto', padding: 24}}>
-      <h2 style={{color: '#1976d2', marginBottom: 24}}>Bills</h2>
+      <h2 style={{color: '#1976d2', marginBottom: 24}}>Bills Management</h2>
+      <div className="bills-header" style={{marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+        <p style={{fontSize: '1.1rem'}}>View and manage all customer bills</p>
+        <button 
+          className="btn btn-primary" 
+          onClick={fetchBills}
+          style={{minWidth: 120}}
+        >
+          Refresh Bills
+        </button>
+      </div>
       {loading ? (
         <div>Loading bills...</div>
       ) : error ? (
@@ -116,10 +127,10 @@ const Bills = () => {
             <tbody>
               {bills.map(bill => (
                 <tr key={bill._id}>
-                  <td>{bill.billNumber}</td>
+                  <td>{safeRender(bill.billNumber)}</td>
                   <td>{bill.createdAt ? new Date(bill.createdAt).toLocaleString() : ''}</td>
-                  <td>{bill.customer}</td>
-                  <td>{bill.cashier}</td>
+                  <td>{safeRender(bill.customer)}</td>
+                  <td>{safeRender(bill.cashier)}</td>
                   <td>
                     {editingBillId === bill._id ? (
                       <table className="table table-sm" style={{background: '#f9f9f9'}}>

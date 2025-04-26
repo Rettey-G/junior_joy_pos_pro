@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getEmployees, createEmployee, updateEmployee } from './api';
+import { safeRender, formatCurrency } from './utils';
 import './styles.css';
 
 const Employees = () => {
@@ -77,7 +78,17 @@ const Employees = () => {
 
   return (
     <div className="employees-page" style={{maxWidth: 900, margin: '0 auto', padding: 24}}>
-      <h2 style={{color: '#1976d2', marginBottom: 24}}>Employees</h2>
+      <h2 style={{color: '#1976d2', marginBottom: 24}}>Employees Management</h2>
+      <div className="employees-header" style={{marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+        <p style={{fontSize: '1.1rem'}}>View and manage employee information</p>
+        <button 
+          className="btn btn-primary" 
+          onClick={fetchEmployees}
+          style={{minWidth: 120}}
+        >
+          Refresh List
+        </button>
+      </div>
       {loading ? (
         <div>Loading employees...</div>
       ) : error ? (
@@ -97,16 +108,29 @@ const Employees = () => {
                 <tr key={emp._id}>
                   <td>
                     {editingId === emp._id ? (
-                      <input value={editData.name} onChange={e => handleEditChange('name', e.target.value)} />
+                      <input 
+                        className="form-control" 
+                        value={editData.name} 
+                        onChange={e => handleEditChange('name', e.target.value)} 
+                        placeholder="Employee name"
+                        style={{width: '100%'}}
+                      />
                     ) : (
-                      emp.name
+                      safeRender(emp.name)
                     )}
                   </td>
                   <td>
                     {editingId === emp._id ? (
-                      <input type="number" value={editData.salary} onChange={e => handleEditChange('salary', e.target.value)} />
+                      <input 
+                        className="form-control" 
+                        type="number" 
+                        value={editData.salary} 
+                        onChange={e => handleEditChange('salary', e.target.value)} 
+                        placeholder="Salary amount"
+                        style={{width: '100%'}}
+                      />
                     ) : (
-                      emp.salary
+                      formatCurrency(emp.salary)
                     )}
                   </td>
                   <td>
@@ -123,13 +147,33 @@ const Employees = () => {
               ))}
               <tr>
                 <td>
-                  <input value={newEmployee.name} onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })} placeholder="New employee name" />
+                  <input 
+                    className="form-control" 
+                    value={newEmployee.name} 
+                    onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })} 
+                    placeholder="New employee name" 
+                    style={{width: '100%'}}
+                  />
                 </td>
                 <td>
-                  <input type="number" value={newEmployee.salary} onChange={e => setNewEmployee({ ...newEmployee, salary: e.target.value })} placeholder="Salary" />
+                  <input 
+                    className="form-control" 
+                    type="number" 
+                    value={newEmployee.salary} 
+                    onChange={e => setNewEmployee({ ...newEmployee, salary: e.target.value })} 
+                    placeholder="Salary" 
+                    style={{width: '100%'}}
+                  />
                 </td>
                 <td>
-                  <button className="btn btn-success btn-sm" onClick={handleAdd} disabled={saving}>Add</button>
+                  <button 
+                    className="btn btn-success btn-sm" 
+                    onClick={handleAdd} 
+                    disabled={saving}
+                    style={{minWidth: '80px'}}
+                  >
+                    {saving ? 'Adding...' : 'Add'}
+                  </button>
                 </td>
               </tr>
             </tbody>

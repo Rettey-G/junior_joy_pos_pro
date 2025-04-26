@@ -9,6 +9,7 @@ import Employees from './Employees.js';
 import SalesReports from './SalesReports.js';
 import Invoice from './Invoice.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
+import { safeRender } from './utils';
 import './styles.css';
 
 // Navigation component
@@ -19,13 +20,14 @@ const Navigation = ({ onNavigate, currentPage }) => {
     <nav className="navbar fixed-navbar">
       <div className="container navbar-container">
         <div className="navbar-brand">
+          <img src="/images/juniorjoy.jpg" alt="Junior Joy Logo" className="navbar-logo" />
           Junior Joy POS
         </div>
         
         {isAuthenticated ? (
           <div className="d-flex align-items-center">
             <div className="navbar-welcome">
-              Welcome, {user.name} ({user.role})
+              Welcome, {safeRender(user?.name)} ({safeRender(user?.role)})
             </div>
             <div className="navbar-nav">
               <button 
@@ -164,8 +166,19 @@ const MainApp = () => {
       
       <footer className="footer modern-footer">
         <div className="footer-content">
-          <span>Junior Joy POS System &copy; {new Date().getFullYear()}</span>
-          <span className="backend-status">Backend Status: {status}</span>
+          <div className="footer-left">
+            <img src="/images/juniorjoy.jpg" alt="Junior Joy Logo" className="footer-logo" />
+            <div className="footer-company">
+              <h3>Junior Joy POS</h3>
+              <p>Professional Point of Sale System</p>
+            </div>
+          </div>
+          <div className="footer-center">
+            <p>&copy; {new Date().getFullYear()} Junior Joy POS System. All rights reserved.</p>
+          </div>
+          <div className="footer-right">
+            <p className="backend-status">Backend Status: <span className={status.includes('Error') ? 'status-error' : 'status-success'}>{status}</span></p>
+          </div>
         </div>
       </footer>
     </div>

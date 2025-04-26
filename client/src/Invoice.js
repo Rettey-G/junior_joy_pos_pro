@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getSales } from './api';
+import { safeRender, formatCurrency } from './utils';
 import './styles.css';
 
 // Fallback sample invoice in case no data is available
@@ -27,44 +28,44 @@ const Invoice = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchLatestInvoice = async () => {
-      setLoading(true);
-      try {
-        // Get the most recent sale/bill
-        const response = await getSales(1, 1);
-        if (response && response.data && response.data.sales && response.data.sales.length > 0) {
-          const latestSale = response.data.sales[0];
-          
-          // Format the data for invoice display
-          setInvoice({
-            billNumber: latestSale.billNumber || 'N/A',
-            date: latestSale.createdAt ? new Date(latestSale.createdAt).toLocaleString() : new Date().toLocaleString(),
-            customer: latestSale.customer || 'Walk-in Customer',
-            cashier: latestSale.cashier || 'Staff',
-            items: latestSale.products || [],
-            subtotal: latestSale.subtotal || 0,
-            gst: latestSale.gst || 0,
-            serviceCharge: latestSale.serviceCharge || 0,
-            discount: latestSale.discount || 0,
-            total: latestSale.total || 0,
-            paid: latestSale.amountPaid || 0,
-            change: latestSale.change || 0
-          });
-        } else {
-          // No sales found, use sample data
-          setInvoice(sampleInvoice);
-        }
-      } catch (err) {
-        console.error('Error fetching invoice:', err);
-        setError('Failed to fetch invoice data');
-        // Fall back to sample data
+  const fetchLatestInvoice = async () => {
+    setLoading(true);
+    try {
+      // Get the most recent sale/bill
+      const response = await getSales(1, 1);
+      if (response && response.data && response.data.sales && response.data.sales.length > 0) {
+        const latestSale = response.data.sales[0];
+        
+        // Format the data for invoice display
+        setInvoice({
+          billNumber: latestSale.billNumber || 'N/A',
+          date: latestSale.createdAt ? new Date(latestSale.createdAt).toLocaleString() : new Date().toLocaleString(),
+          customer: latestSale.customer || 'Walk-in Customer',
+          cashier: latestSale.cashier || 'Staff',
+          items: latestSale.products || [],
+          subtotal: latestSale.subtotal || 0,
+          gst: latestSale.gst || 0,
+          serviceCharge: latestSale.serviceCharge || 0,
+          discount: latestSale.discount || 0,
+          total: latestSale.total || 0,
+          paid: latestSale.amountPaid || 0,
+          change: latestSale.change || 0
+        });
+      } else {
+        // No sales found, use sample data
         setInvoice(sampleInvoice);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching invoice:', err);
+      setError('Failed to fetch invoice data');
+      // Fall back to sample data
+      setInvoice(sampleInvoice);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchLatestInvoice();
   }, []);
 
@@ -76,50 +77,120 @@ const Invoice = () => {
   const inv = invoice || sampleInvoice;
 
   return (
-    <div className="invoice-page" style={{maxWidth: 600, margin: '0 auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(33,150,243,0.08)'}}>
-      <div style={{textAlign: 'center', marginBottom: 24}}>
-        <h2 style={{color: '#1976d2', marginBottom: 0}}>Junior Joy POS</h2>
-        <div style={{fontSize: '1.1rem', marginTop: 8}}>INVOICE</div>
-        <div style={{marginTop: 8}}>Bill No: {inv.billNumber}</div>
-        <div>Date: {inv.date}</div>
+    <div className="invoice-container">
+      <div className="invoice-header" style={{marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+        <h2 style={{color: '#1976d2', marginBottom: 0}}>Invoice</h2>
+        <div>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => {
+              setLoading(true);
+              fetchLatestInvoice();
+            }}
+            style={{marginRight: 12}}
+            disabled={loading}
+          >
+            Refresh
+          </button>
+          <button 
+            className="btn btn-secondary" 
+            onClick={handlePrint}
+            disabled={loading}
+          >
+            Print
+          </button>
+        </div>
       </div>
-      <div style={{marginBottom: 16}}>
-        <div><strong>Customer:</strong> {inv.customer}</div>
-        <div><strong>Cashier:</strong> {inv.cashier}</div>
-      </div>
-      <table className="table" style={{marginBottom: 16}}>
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inv.items.map((item, idx) => (
-            <tr key={idx}>
-              <td>{item.name}</td>
-              <td>{item.quantity}</td>
-              <td>MVR {item.price.toFixed(2)}</td>
-              <td>MVR {(item.price * item.quantity).toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="cart-totals" style={{marginBottom: 16}}>
-        <div className="total-row"><span>Subtotal:</span> <span>MVR {inv.subtotal.toFixed(2)}</span></div>
-        <div className="total-row"><span>GST:</span> <span>MVR {inv.gst.toFixed(2)}</span></div>
-        <div className="total-row"><span>Service Charge:</span> <span>MVR {inv.serviceCharge.toFixed(2)}</span></div>
-        <div className="total-row"><span>Discount:</span> <span>- MVR {inv.discount.toFixed(2)}</span></div>
-        <div className="total-row grand-total"><span>Total:</span> <span>MVR {inv.total.toFixed(2)}</span></div>
-        <div className="total-row"><span>Paid:</span> <span>MVR {inv.paid.toFixed(2)}</span></div>
-        <div className="total-row"><span>Change:</span> <span>MVR {inv.change.toFixed(2)}</span></div>
-      </div>
-      <div style={{textAlign: 'center', marginTop: 24}}>
-        <button className="btn btn-primary" onClick={handlePrint}>Print Invoice</button>
-      </div>
-      <div style={{marginTop: 32, textAlign: 'center', color: '#888'}}>Thank you for your business!</div>
+      
+      {loading ? (
+        <div className="text-center" style={{padding: 40}}>Loading invoice data...</div>
+      ) : error ? (
+        <div className="text-center" style={{padding: 40, color: 'red'}}>{error}</div>
+      ) : (
+        <div className="invoice-page" style={{maxWidth: 600, margin: '0 auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(33,150,243,0.08)'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24}}>
+            <div>
+              <h2 style={{color: '#1976d2', marginBottom: 0}}>Junior Joy POS</h2>
+              <p style={{margin: '4px 0 0 0', color: '#666'}}>Professional Point of Sale System</p>
+            </div>
+            <img src="/images/juniorjoy.jpg" alt="Junior Joy Logo" style={{width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', border: '2px solid #bbdefb'}} />
+          </div>
+          
+          <div style={{textAlign: 'center', marginBottom: 24}}>
+            <div style={{fontSize: '1.1rem', marginTop: 8, fontWeight: 'bold'}}>INVOICE</div>
+            <div style={{marginTop: 8}}>Bill No: {safeRender(inv.billNumber)}</div>
+            <div>Date: {inv.date}</div>
+          </div>
+          
+          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 16}}>
+            <div>
+              <div style={{fontWeight: 'bold', marginBottom: 4}}>Customer:</div>
+              <div>{safeRender(inv.customer)}</div>
+            </div>
+            <div>
+              <div style={{fontWeight: 'bold', marginBottom: 4}}>Cashier:</div>
+              <div>{safeRender(inv.cashier)}</div>
+            </div>
+          </div>
+          
+          <table className="invoice-table" style={{width: '100%', borderCollapse: 'collapse', marginBottom: 20}}>
+            <thead>
+              <tr style={{background: '#f5f5f5'}}>
+                <th style={{padding: 8, textAlign: 'left', borderBottom: '1px solid #ddd'}}>Item</th>
+                <th style={{padding: 8, textAlign: 'center', borderBottom: '1px solid #ddd'}}>Qty</th>
+                <th style={{padding: 8, textAlign: 'right', borderBottom: '1px solid #ddd'}}>Price</th>
+                <th style={{padding: 8, textAlign: 'right', borderBottom: '1px solid #ddd'}}>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inv.items.map((item, idx) => (
+                <tr key={idx}>
+                  <td style={{padding: 8, borderBottom: '1px solid #eee'}}>{safeRender(item.name)}</td>
+                  <td style={{padding: 8, textAlign: 'center', borderBottom: '1px solid #eee'}}>{item.quantity}</td>
+                  <td style={{padding: 8, textAlign: 'right', borderBottom: '1px solid #eee'}}>MVR {item.price.toFixed(2)}</td>
+                  <td style={{padding: 8, textAlign: 'right', borderBottom: '1px solid #eee'}}>MVR {(item.price * item.quantity).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          <div style={{marginLeft: 'auto', maxWidth: 250}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 4}}>
+              <span>Subtotal:</span>
+              <span>MVR {inv.subtotal.toFixed(2)}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 4}}>
+              <span>GST (16%):</span>
+              <span>MVR {inv.gst.toFixed(2)}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 4}}>
+              <span>Service Charge (10%):</span>
+              <span>MVR {inv.serviceCharge.toFixed(2)}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 4}}>
+              <span>Discount:</span>
+              <span>MVR {inv.discount.toFixed(2)}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontWeight: 'bold', borderTop: '1px solid #ddd', paddingTop: 4}}>
+              <span>Total:</span>
+              <span>MVR {inv.total.toFixed(2)}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 4}}>
+              <span>Paid:</span>
+              <span>MVR {inv.paid.toFixed(2)}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: '#4CAF50', fontWeight: 'bold'}}>
+              <span>Change:</span>
+              <span>MVR {inv.change.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          <div style={{marginTop: 32, textAlign: 'center', borderTop: '1px dashed #ddd', paddingTop: 16}}>
+            <div style={{fontWeight: 'bold', marginBottom: 4}}>Thank you for your business!</div>
+            <div style={{fontSize: '0.9rem', color: '#666'}}>Please keep this invoice for your records.</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

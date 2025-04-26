@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getSalesReport, getSales } from './api';
+import { safeRender, formatDate, formatCurrency } from './utils';
 import './styles.css';
 // If you want graphs, you can use a library like chart.js or recharts. Here we use a placeholder.
 
@@ -103,9 +104,9 @@ const SalesReports = () => {
               {report.sales && report.sales.map((sale, idx) => (
                 <tr key={sale._id || idx}>
                   <td>{sale.createdAt ? new Date(sale.createdAt).toLocaleString() : ''}</td>
-                  <td>{sale.billNumber}</td>
-                  <td>{sale.cashier}</td>
-                  <td>{sale.customer}</td>
+                  <td>{safeRender(sale.billNumber)}</td>
+                  <td>{safeRender(sale.cashier)}</td>
+                  <td>{safeRender(sale.customer)}</td>
                   <td>
                     <ul style={{paddingLeft: 16}}>
                       {sale.products.map((item, i) => (

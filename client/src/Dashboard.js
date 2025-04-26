@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSalesReport } from './api';
 import { useAuth } from './AuthContext';
+import { safeRender, formatDate, formatCurrency } from './utils';
 
 const Dashboard = () => {
   const { user, isAuthenticated, isAdmin } = useAuth();
@@ -198,7 +199,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>
-              Period: {formatDate(reportData.dateRange.start)} to {formatDate(reportData.dateRange.end)}
+              Period: {reportData.dateRange && reportData.dateRange.start ? formatDate(reportData.dateRange.start) : ''} to {reportData.dateRange && reportData.dateRange.end ? formatDate(reportData.dateRange.end) : ''}
             </div>
           </div>
           
