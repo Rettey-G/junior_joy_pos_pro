@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './AuthContext.js';
 import Login from './Login.js';
 import Register from './Register.js';
 import Dashboard from './Dashboard.js';
+import DirectLogin from './DirectLogin.js';
 import Sales from './Sales.js';
 import Bills from './Bills.js';
 import Employees from './Employees.js';
@@ -171,7 +172,7 @@ const AppWithAuth = () => {
 const MainApp = () => {
   const { isAuthenticated } = useAuth();
   const [page, setPage] = useState(isAuthenticated ? 'products' : 'login');
-  const [showRegister, setShowRegister] = useState(false);
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [status, setStatus] = useState('Loading...');
 
   // Check backend connection
@@ -191,11 +192,19 @@ const MainApp = () => {
 
   // Render content based on current page
   const renderContent = () => {
+    // Check if URL has direct-login parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const directLogin = urlParams.get('direct-login');
+    
+    if (directLogin === 'true') {
+      return <DirectLogin />;
+    }
+    
     if (!isAuthenticated) {
-      return showRegister ? (
-        <Register onToggleForm={() => setShowRegister(false)} />
+      return showRegisterForm ? (
+        <Register onToggleForm={() => setShowRegisterForm(false)} />
       ) : (
-        <Login onToggleForm={() => setShowRegister(true)} />
+        <Login onToggleForm={() => setShowRegisterForm(true)} />
       );
     }
 

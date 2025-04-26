@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Junior Joy POS - Emergency Access</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 {
+      color: #2196f3;
+      text-align: center;
+      margin-top: 0;
+    }
+    .alert {
+      background-color: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 20px;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Junior Joy POS</h1>
+    <h2 style="text-align: center; margin-top: -10px; color: #666;">Emergency Access</h2>
+    
+    <div class="alert">
+      <p><strong>Database Connection Issue Detected</strong></p>
+      <p>This page provides emergency access to the Junior Joy POS system when the database connection is not working properly.</p>
+    </div>
+    
+    <p>Click the button below to access the system with admin privileges:</p>
+    
+    <a href="/?direct-login=true" class="btn">Access System Now</a>
+    
+    <div class="footer">
+      <p>This is a temporary solution. Please contact technical support if the issue persists.</p>
+    </div>
+  </div>
+</body>
+</html>
