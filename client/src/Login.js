@@ -5,6 +5,8 @@ const Login = ({ onToggleForm }) => {
   const { login, error } = useAuth();
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -14,22 +16,28 @@ const Login = ({ onToggleForm }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setLoginError('');
     try {
       await login(credentials);
       // Login successful, handled by AuthContext
     } catch (err) {
       console.error('Login error:', err);
+      setLoginError('Invalid username or password. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+  
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
       <h2>Login</h2>
-      {error && (
-        <div style={{ color: 'red', marginBottom: '10px' }}>
-          {error}
+      {(error || loginError) && (
+        <div style={{ color: 'red', marginBottom: '10px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px', border: '1px solid #ffcdd2' }}>
+          {error || loginError}
         </div>
       )}
       <form onSubmit={handleSubmit}>
@@ -46,14 +54,36 @@ const Login = ({ onToggleForm }) => {
         </div>
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px' }}>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={credentials.password}
-            onChange={handleChange}
-            required
-            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              value={credentials.password}
+              onChange={handleChange}
+              required
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd', paddingRight: '40px' }}
+              autoComplete="current-password"
+            />
+            <button 
+              type="button" 
+              onClick={togglePasswordVisibility}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#666'
+              }}
+            >
+              {showPassword ? '🔒' : '👁️'}
+            </button>
+          </div>
+          <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
+            Default credentials: admin/admin or try admin123/password123
+          </small>
         </div>
         <button
           type="submit"

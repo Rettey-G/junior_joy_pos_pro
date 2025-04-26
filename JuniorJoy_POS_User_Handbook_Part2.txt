@@ -1,0 +1,825 @@
+# JUNIOR JOY POS PRO
+## COMPREHENSIVE USER HANDBOOK - PART 2
+
+## PART 2: CORE MODULES
+
+### 6. DASHBOARD
+
+**Dashboard Overview**
+
+The Dashboard is your command center, providing a real-time overview of your business performance and key metrics:
+
+1. **Accessing the Dashboard**
+   - Click the Dashboard icon in the navigation bar
+   - The Dashboard is also the default landing page after login
+   - Different user roles may see customized Dashboard views
+
+2. **Time Period Selection**
+   - Use the period selector at the top to choose your data timeframe
+   - Options include Today, Yesterday, This Week, This Month, This Year, and Custom Range
+   - The Dashboard automatically refreshes when you change the time period
+
+3. **Dashboard Layout**
+   - The Dashboard is organized into cards containing different metrics and charts
+   - Cards can be rearranged by dragging and dropping
+   - Resize cards by dragging the corner handles
+   - Customize visible cards through the Dashboard settings
+
+**Key Performance Indicators**
+
+The Dashboard displays critical business metrics:
+
+1. **Sales Metrics**
+   - Total Sales: Gross sales for the selected period
+   - Transaction Count: Number of completed sales
+   - Average Transaction Value: Average amount per sale
+   - Sales Growth: Comparison with previous equivalent period
+   - Sales by Hour: Chart showing sales distribution throughout the day
+
+2. **Inventory Metrics**
+   - Low Stock Items: Products below reorder threshold
+   - Out of Stock Items: Products with zero quantity
+   - Inventory Value: Total value of current inventory
+   - Top Selling Products: List of best performers by quantity or value
+   - Inventory Turnover: Rate at which inventory is sold and replaced
+
+3. **Customer Metrics**
+   - New Customers: Number of new customer accounts created
+   - Returning Customers: Number of repeat customers
+   - Average Spend per Customer: Mean purchase amount
+   - Customer Retention Rate: Percentage of customers who return
+   - Top Customers: Highest spending customers for the period
+
+4. **Financial Metrics**
+   - Gross Profit: Sales minus cost of goods sold
+   - Profit Margin: Gross profit as a percentage of sales
+   - Expenses: Total operational costs
+   - Outstanding Invoices: Value of unpaid invoices
+   - Cash Flow: Money moving in and out of the business
+
+**Interactive Charts**
+
+The Dashboard includes visual representations of your data:
+
+1. **Sales Performance Chart**
+   - Line or bar chart showing sales trends over time
+   - Hover over data points to see detailed values
+   - Compare with previous periods
+   - Toggle between daily, weekly, or monthly view
+
+2. **Product Category Breakdown**
+   - Pie or donut chart showing sales by product category
+   - Click on segments to drill down into subcategories
+   - View as percentage or absolute values
+   - Sort by sales value or quantity
+
+3. **Payment Method Distribution**
+   - Bar chart showing sales by payment method
+   - Track cash vs. card vs. other payment types
+   - Identify trends in payment preferences
+   - Monitor digital payment adoption
+
+4. **Employee Performance**
+   - Bar chart comparing sales by employee
+   - View by total sales or transaction count
+   - Filter by department or role
+   - Identify top performers
+
+**Alert Notifications**
+
+The Dashboard highlights important situations requiring attention:
+
+1. **Inventory Alerts**
+   - Low stock warnings with reorder suggestions
+   - Out of stock notifications
+   - Excess inventory warnings
+   - Upcoming expiration dates (if applicable)
+
+2. **Financial Alerts**
+   - Overdue invoices
+   - Unusual sales patterns
+   - Cash drawer discrepancies
+   - Payment processing issues
+
+3. **System Alerts**
+   - Software update notifications
+   - Backup status
+   - Hardware connection issues
+   - Security alerts
+
+**Dashboard Customization**
+
+Tailor the Dashboard to your specific needs:
+
+1. **Adding/Removing Cards**
+   - Click the settings gear icon in the top-right corner
+   - Select "Customize Dashboard"
+   - Check/uncheck cards to show/hide
+   - Click "Save" to apply changes
+
+2. **Creating Custom Cards**
+   - Click "Add Custom Card" in Dashboard settings
+   - Select metric or report to display
+   - Choose visualization type
+   - Configure refresh interval
+   - Set alert thresholds if applicable
+
+3. **Saving Dashboard Layouts**
+   - Create multiple Dashboard configurations for different purposes
+   - Save layouts with descriptive names
+   - Switch between saved layouts as needed
+   - Share layouts with other users (admin only)
+
+### 7. PRODUCTS MANAGEMENT
+
+**Product Catalog Basics**
+
+The Products module is where you manage your entire product catalog:
+
+1. **Accessing Products**
+   - Click the Products icon in the navigation bar
+   - The default view shows your product list
+   - Use tabs to access different product management functions
+
+2. **Product List View**
+   - Displays all products in a sortable, filterable table
+   - Columns include Code, Name, Category, Price, Cost, Stock, and Status
+   - Click column headers to sort
+   - Use the search bar for quick product lookup
+   - Filter by category, status, stock level, or custom attributes
+
+3. **Product Categories**
+   - Organize products into hierarchical categories
+   - Create, edit, and manage categories
+   - Assign products to multiple categories if needed
+   - Set category-specific settings (tax rates, discounts, etc.)
+
+**Adding and Editing Products**
+
+Maintain your product catalog with comprehensive product information:
+
+1. **Creating a New Product**
+   - Click "Add Product" button
+   - Fill in the product details form
+   - Required fields include Name, Price, and Category
+   - Save to add to your catalog
+
+2. **Basic Product Information**
+   - Product Name: Clear, descriptive name
+   - SKU/Code: Unique identifier
+   - Barcode: UPC, EAN, or custom barcode
+   - Description: Detailed product description
+   - Category: Primary product category
+   - Tags: Keywords for improved searchability
+
+3. **Pricing Information**
+   - Regular Price: Standard selling price
+   - Cost Price: What you pay for the item
+   - Profit Margin: Automatically calculated
+   - Sale Price: Discounted price (if applicable)
+   - Tax Category: For proper tax calculation
+   - Price Points: Additional price levels (wholesale, VIP, etc.)
+
+4. **Inventory Settings**
+   - Track Inventory: Enable/disable stock tracking
+   - Current Stock: Available quantity
+   - Reorder Point: Low stock threshold
+   - Reorder Quantity: Suggested order amount
+   - Allow Backorder: Enable/disable selling out-of-stock items
+   - Inventory Location: Where the product is stored
+
+5. **Product Attributes**
+   - Size, Color, Material, etc.
+   - Create custom attributes as needed
+   - Use for filtering and reporting
+   - Display on receipts and invoices if relevant
+
+6. **Product Images**
+   - Upload multiple product images
+   - Set primary display image
+   - Crop and resize within the application
+   - Organize images in a specific order
+
+**Product Variations**
+
+Manage products with multiple options or variants:
+
+1. **Creating Product Variations**
+   - From the product edit screen, click "Add Variations"
+   - Select attributes that create variations (size, color, etc.)
+   - Generate all possible combinations or select specific ones
+   - Set prices and stock levels for each variation
+
+2. **Managing Variation Inventory**
+   - Track stock for each variation independently
+   - Set variation-specific reorder points
+   - View variation sales performance
+   - Adjust prices for individual variations
+
+3. **Variation Display**
+   - Configure how variations appear in the POS interface
+   - Set display order for variation options
+   - Upload variation-specific images
+   - Create variation-specific barcodes
+
+**Product Imports and Exports**
+
+Efficiently manage large product catalogs:
+
+1. **Importing Products**
+   - Click "Import" in the Products module
+   - Download the template CSV file
+   - Fill in product data following the template format
+   - Upload the completed file
+   - Review and confirm the import
+
+2. **Exporting Products**
+   - Click "Export" in the Products module
+   - Select export format (CSV, Excel, PDF)
+   - Choose which fields to include
+   - Filter products to export if needed
+   - Download the exported file
+
+3. **Bulk Updates**
+   - Select multiple products in the list view
+   - Click "Bulk Update"
+   - Choose fields to update
+   - Enter new values
+   - Apply changes to all selected products
+
+**Product Reports**
+
+Analyze your product performance:
+
+1. **Product Performance Report**
+   - Sales by product over time
+   - Profit margin analysis
+   - Comparison with previous periods
+   - Seasonal trends identification
+
+2. **Inventory Valuation Report**
+   - Current stock value
+   - Value by category
+   - Cost vs. retail valuation
+   - Historical valuation trends
+
+3. **Product Movement Report**
+   - Stock changes over time
+   - Sales, returns, adjustments, and transfers
+   - Identify fast and slow-moving products
+   - Forecast future inventory needs
+
+### 8. SALES PROCESSING
+
+**Point of Sale Interface**
+
+The Sales module is the heart of your daily operations:
+
+1. **Accessing the POS**
+   - Click the Sales icon in the navigation bar
+   - The default view shows the POS interface
+   - Different layouts are available for different business types
+
+2. **POS Layout**
+   - Product Grid: Displays products by category
+   - Cart: Shows current transaction items
+   - Customer Panel: Displays/selects customer information
+   - Action Bar: Contains payment and other function buttons
+   - Search Bar: For finding products quickly
+
+3. **Customizing the POS Layout**
+   - Access POS settings via the gear icon
+   - Choose between different layout templates
+   - Configure visible buttons and functions
+   - Set default view (categories, favorites, etc.)
+   - Adjust font sizes and button sizes
+
+**Processing a Sale**
+
+Step-by-step guide to completing a transaction:
+
+1. **Starting a New Sale**
+   - The POS automatically starts with a new, empty cart
+   - If a previous sale is in progress, click "New Sale" to start fresh
+   - Optionally select a customer for the transaction
+   - Choose the appropriate price list if applicable
+
+2. **Adding Products to Cart**
+   - Scan product barcode
+   - Search for product by name or code
+   - Browse categories and click on product
+   - Use quick buttons for common items
+   - Enter custom items if needed
+
+3. **Modifying Cart Items**
+   - Change quantity using +/- buttons or direct entry
+   - Apply item-specific discounts
+   - Remove items by clicking the trash icon
+   - Add notes to specific items
+   - Change price (if permissions allow)
+
+4. **Applying Discounts**
+   - Item-level discounts: Apply to specific products
+   - Cart-level discounts: Apply to the entire transaction
+   - Percentage or fixed amount discounts
+   - Automatic discounts based on promotions
+   - Discount reason codes for tracking
+
+5. **Customer Assignment**
+   - Click "Select Customer" to assign the sale
+   - Search existing customers by name, phone, or email
+   - Create new customer if needed
+   - View customer purchase history and notes
+   - Apply customer-specific pricing or discounts
+
+6. **Completing Payment**
+   - Click "Payment" to proceed to checkout
+   - Enter payment amount
+   - Select payment method(s)
+   - Process split payments if needed
+   - Calculate and provide change for cash payments
+   - Complete the transaction
+
+7. **Receipt Options**
+   - Print physical receipt
+   - Email digital receipt
+   - SMS receipt link
+   - No receipt option
+   - Reprint receipt if needed
+
+**Special Transaction Types**
+
+Handle various transaction scenarios:
+
+1. **Returns and Exchanges**
+   - Click "Returns" in the POS menu
+   - Search for the original transaction
+   - Select items to return
+   - Process exchange for different items if needed
+   - Issue refund or store credit
+
+2. **Layaway/Hold Orders**
+   - Add items to cart
+   - Click "Save as Hold"
+   - Enter hold details and duration
+   - Collect deposit if required
+   - Retrieve hold order when customer returns
+
+3. **Special Orders**
+   - Create order for non-stocked items
+   - Record customer details and requirements
+   - Collect deposit if needed
+   - Track order status
+   - Notify customer when order arrives
+
+4. **Gift Cards and Store Credit**
+   - Sell new gift cards
+   - Check gift card balance
+   - Apply gift card to purchase
+   - Issue and redeem store credit
+   - Track gift card usage and history
+
+**Cash Management**
+
+Maintain accurate cash handling:
+
+1. **Cash Drawer Operations**
+   - Opening float/starting balance
+   - Cash in/out during shift
+   - Denominations tracking
+   - Multiple drawer support
+   - Drawer transfer between cashiers
+
+2. **End of Day Reconciliation**
+   - Count drawer contents by denomination
+   - Compare with system expected amount
+   - Record and explain discrepancies
+   - Generate cash-up report
+   - Prepare bank deposit
+
+3. **Cash Reports**
+   - Daily cash flow report
+   - Discrepancy tracking
+   - Tender type breakdown
+   - Cashier performance comparison
+   - Historical cash handling analysis
+
+**Sales Modifiers and Options**
+
+Customize products during the sale:
+
+1. **Product Modifiers**
+   - Add options to products (e.g., size, toppings, etc.)
+   - Required vs. optional modifiers
+   - Single-select or multi-select options
+   - Modifier pricing (free, fixed price, or percentage)
+   - Modifier groups for organization
+
+2. **Combo/Bundle Sales**
+   - Create predefined product bundles
+   - Dynamic bundles with customer choice
+   - Bundle pricing and discounts
+   - Inventory tracking for bundle components
+   - Bundle-specific promotions
+
+3. **Custom Products**
+   - Add non-catalog items
+   - Set custom price and description
+   - Assign to appropriate category
+   - Apply relevant taxes
+   - Save as catalog item if needed
+
+**Offline Operations**
+
+Continue selling even without internet connection:
+
+1. **Offline Mode Activation**
+   - Automatically activates when connection is lost
+   - Manual activation for planned outages
+   - Visual indicator shows offline status
+   - Limited functionality notification
+
+2. **Offline Capabilities**
+   - Process sales using cached product data
+   - Store transactions locally
+   - Print receipts
+   - Basic customer lookup
+   - Cash and manual card processing
+
+3. **Synchronization**
+   - Automatic sync when connection restores
+   - Manual sync option
+   - Conflict resolution for simultaneous changes
+   - Sync status reporting
+   - Error handling for failed syncs
+
+### 9. CUSTOMER MANAGEMENT
+
+**Customer Database Basics**
+
+The Customers module helps you build and maintain customer relationships:
+
+1. **Accessing Customers**
+   - Click the Customers icon in the navigation bar
+   - The default view shows your customer list
+   - Use tabs to access different customer management functions
+
+2. **Customer List View**
+   - Displays all customers in a sortable, filterable table
+   - Columns include Name, Phone, Email, Last Visit, and Lifetime Value
+   - Click column headers to sort
+   - Use the search bar for quick customer lookup
+   - Filter by tags, groups, or custom attributes
+
+3. **Customer Groups**
+   - Organize customers into logical groups
+   - Create, edit, and manage groups
+   - Assign customers to multiple groups if needed
+   - Set group-specific settings (discounts, price levels, etc.)
+
+**Adding and Editing Customers**
+
+Maintain comprehensive customer information:
+
+1. **Creating a New Customer**
+   - Click "Add Customer" button
+   - Fill in the customer details form
+   - Required fields include Name and at least one contact method
+   - Save to add to your database
+
+2. **Basic Customer Information**
+   - Full Name: First, middle, last name
+   - Company: Business name if applicable
+   - Contact Information: Phone, email, address
+   - Tax ID/Business Number: For business customers
+   - Date of Birth: For birthday promotions
+   - Profile Picture: Optional customer photo
+
+3. **Extended Customer Details**
+   - Customer Since: First purchase date
+   - Loyalty Program Status: Points, tier, etc.
+   - Preferred Payment Method: For faster checkout
+   - Default Store Location: For multi-location businesses
+   - Language Preference: For multilingual businesses
+   - Marketing Preferences: Email, SMS, mail opt-in status
+
+4. **Custom Fields**
+   - Configure business-specific customer attributes
+   - Set field types (text, number, date, dropdown, etc.)
+   - Make fields required or optional
+   - Set visibility for different user roles
+   - Use in reports and filters
+
+**Customer Interactions**
+
+Track and manage your relationship with each customer:
+
+1. **Purchase History**
+   - Complete list of customer transactions
+   - View receipt details for any purchase
+   - Filter by date range, product, or amount
+   - Identify purchasing patterns
+   - Calculate average purchase value and frequency
+
+2. **Customer Notes**
+   - Add dated notes about customer interactions
+   - Categorize notes (complaint, compliment, inquiry, etc.)
+   - Tag staff members in notes for follow-up
+   - Set follow-up reminders
+   - View note history chronologically
+
+3. **Communication Log**
+   - Track emails, calls, and messages
+   - Record communication content and outcomes
+   - Schedule follow-up communications
+   - Link communications to sales or support issues
+   - Measure response times and resolution rates
+
+4. **Customer Preferences**
+   - Record product preferences
+   - Note size, color, or style preferences
+   - Track allergies or restrictions (for food service)
+   - Save favorite items for quick addition to cart
+   - Document special handling instructions
+
+**Customer Marketing**
+
+Leverage customer data for targeted marketing:
+
+1. **Customer Segmentation**
+   - Create segments based on purchase behavior
+   - Segment by demographics, location, or preferences
+   - Automatic segment assignment based on rules
+   - Manual segment assignment for special cases
+   - Use segments for targeted marketing
+
+2. **Email Marketing Integration**
+   - Connect with email marketing platforms
+   - Create customer lists based on segments
+   - Track email campaign performance
+   - Measure conversion from emails to sales
+   - Manage unsubscribe requests
+
+3. **SMS Marketing**
+   - Send text message notifications
+   - Create SMS campaigns
+   - Schedule automated birthday or anniversary messages
+   - Track SMS engagement
+   - Comply with opt-in/opt-out regulations
+
+4. **Loyalty Program Management**
+   - Configure points earning rules
+   - Set up reward redemption options
+   - Track points balance and history
+   - Manage loyalty tiers and benefits
+   - Analyze program effectiveness
+
+**Customer Insights**
+
+Analyze customer data for business decisions:
+
+1. **Customer Value Analysis**
+   - Calculate lifetime value for each customer
+   - Identify high-value customers
+   - Track value trends over time
+   - Compare acquisition cost to lifetime value
+   - Forecast future value based on patterns
+
+2. **Retention Analysis**
+   - Measure customer retention rates
+   - Identify at-risk customers
+   - Analyze reasons for customer churn
+   - Create retention strategies
+   - Track effectiveness of retention efforts
+
+3. **Purchasing Pattern Analysis**
+   - Identify cross-selling opportunities
+   - Discover product affinities
+   - Analyze purchase frequency
+   - Track seasonal buying patterns
+   - Predict future purchases
+
+4. **Customer Satisfaction Metrics**
+   - Record and track satisfaction scores
+   - Analyze feedback by category
+   - Identify improvement opportunities
+   - Correlate satisfaction with purchasing behavior
+   - Measure Net Promoter Score (NPS)
+
+**Customer Import and Export**
+
+Efficiently manage your customer database:
+
+1. **Importing Customers**
+   - Click "Import" in the Customers module
+   - Download the template CSV file
+   - Fill in customer data following the template format
+   - Upload the completed file
+   - Review and confirm the import
+
+2. **Exporting Customers**
+   - Click "Export" in the Customers module
+   - Select export format (CSV, Excel, PDF)
+   - Choose which fields to include
+   - Filter customers to export if needed
+   - Download the exported file
+
+3. **Data Privacy Compliance**
+   - Configure data retention policies
+   - Implement data anonymization
+   - Process data deletion requests
+   - Maintain consent records
+   - Generate privacy compliance reports
+
+### 10. EMPLOYEE MANAGEMENT
+
+**Employee Database Basics**
+
+The Employees module helps you manage your staff effectively:
+
+1. **Accessing Employees**
+   - Click the Employees icon in the navigation bar
+   - The default view shows your employee list
+   - Use tabs to access different employee management functions
+
+2. **Employee List View**
+   - Displays all employees in a sortable, filterable table
+   - Columns include Name, Position, Department, Hire Date, and Status
+   - Click column headers to sort
+   - Use the search bar for quick employee lookup
+   - Filter by department, position, or status
+
+3. **Department and Position Management**
+   - Create and manage departments
+   - Define positions within departments
+   - Set position-specific permissions
+   - Configure reporting hierarchies
+   - Assign employees to appropriate positions
+
+**Adding and Editing Employees**
+
+Maintain comprehensive employee information:
+
+1. **Creating a New Employee**
+   - Click "Add Employee" button
+   - Fill in the employee details form
+   - Required fields include Name, Position, and Contact Information
+   - Save to add to your database
+
+2. **Basic Employee Information**
+   - Full Name: First, middle, last name
+   - Contact Information: Phone, email, address
+   - Emergency Contact: Name and phone number
+   - Date of Birth: For age verification and celebrations
+   - Profile Picture: For identification and receipts
+
+3. **Employment Details**
+   - Employee ID: Unique identifier
+   - Hire Date: When employment began
+   - Position: Job title and role
+   - Department: Organizational unit
+   - Manager: Reporting supervisor
+   - Employment Type: Full-time, part-time, seasonal, etc.
+
+4. **System Access**
+   - Username: For system login
+   - Initial Password: Temporary password for first login
+   - User Role: Determines system permissions
+   - Terminal Restrictions: Limit access to specific devices
+   - Schedule-based Access: Restrict login to scheduled hours
+
+5. **Compensation Information**
+   - Salary/Wage: Base compensation
+   - Pay Period: Weekly, bi-weekly, monthly
+   - Currency: Primary payment currency
+   - Commission Structure: If applicable
+   - Bonus Eligibility: Performance bonus rules
+   - Benefits: Health insurance, retirement, etc.
+
+**Scheduling and Time Tracking**
+
+Manage employee work hours:
+
+1. **Schedule Creation**
+   - Create weekly or monthly schedules
+   - Assign shifts by department or position
+   - Set recurring schedules
+   - Account for time-off requests
+   - Publish schedules for employee access
+
+2. **Time Clock**
+   - Employee clock in/out
+   - Break tracking
+   - Automatic meal break enforcement
+   - GPS verification for mobile clock-in
+   - Biometric verification options
+
+3. **Time Sheet Review**
+   - Review and approve time records
+   - Edit incorrect entries
+   - Add notes or explanations
+   - Calculate regular and overtime hours
+   - Export for payroll processing
+
+4. **Schedule Compliance**
+   - Compare scheduled vs. actual hours
+   - Track early/late arrivals
+   - Monitor missed shifts
+   - Analyze schedule adherence
+   - Identify scheduling improvement opportunities
+
+**Performance Management**
+
+Track and improve employee performance:
+
+1. **Sales Performance**
+   - Track sales by employee
+   - Monitor average transaction value
+   - Measure items per transaction
+   - Compare performance against targets
+   - Analyze performance trends over time
+
+2. **Goal Setting**
+   - Set individual performance goals
+   - Create team objectives
+   - Track progress toward goals
+   - Provide real-time performance feedback
+   - Celebrate achievement milestones
+
+3. **Performance Reviews**
+   - Schedule regular reviews
+   - Document performance discussions
+   - Rate performance in key areas
+   - Set improvement plans
+   - Track progress between reviews
+
+4. **Training and Development**
+   - Record completed training
+   - Assign new training modules
+   - Track certification expiration
+   - Identify skill gaps
+   - Create development plans
+
+**Employee Communication**
+
+Facilitate staff communication and engagement:
+
+1. **Announcements**
+   - Publish company-wide announcements
+   - Target messages to specific departments
+   - Schedule announcement publication
+   - Track announcement views
+   - Gather feedback on announcements
+
+2. **Task Assignment**
+   - Create and assign tasks
+   - Set due dates and priorities
+   - Track task completion
+   - Send reminders for overdue tasks
+   - Analyze task completion rates
+
+3. **Document Sharing**
+   - Share policies and procedures
+   - Distribute employee handbook
+   - Provide training materials
+   - Secure sensitive documents
+   - Track document acknowledgment
+
+4. **Employee Feedback**
+   - Collect suggestions and ideas
+   - Conduct employee surveys
+   - Measure employee satisfaction
+   - Identify improvement opportunities
+   - Recognize employee contributions
+
+**Employee Reports**
+
+Analyze employee data for management decisions:
+
+1. **Staffing Analysis**
+   - Headcount by department
+   - Turnover rates and trends
+   - Average tenure
+   - New hire retention
+   - Staffing costs as percentage of revenue
+
+2. **Productivity Reports**
+   - Sales per labor hour
+   - Transactions per employee
+   - Labor cost percentage
+   - Productivity by time of day
+   - Efficiency comparison by department
+
+3. **Time and Attendance**
+   - Hours worked by employee
+   - Overtime analysis
+   - Absence patterns
+   - Late arrival frequency
+   - Schedule adherence rates
+
+4. **Commission and Bonus Reports**
+   - Commission calculations
+   - Bonus qualification tracking
+   - Performance-based pay analysis
+   - Commission trend analysis
+   - Top earner identification
