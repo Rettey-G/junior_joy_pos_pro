@@ -76,16 +76,15 @@ const Navigation = ({ onNavigate, currentPage }) => {
       <div className="navbar-container">
         <div className="navbar-brand">
           <img 
-            src="https://i.imgur.com/8bGJQem.png" 
+            src="/logo.png" 
             alt="Junior Joy Logo" 
             className="navbar-logo" 
-            style={{ height: '65px', marginRight: '10px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #bbdefb' }}
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';            
             }}
           />
-          Junior Joy POS
+          <span className="brand-text">Junior Joy POS</span>
         </div>
         
         {isAuthenticated ? (
@@ -243,7 +242,7 @@ const MainApp = () => {
       <footer className="footer modern-footer">
         <div className="footer-content">
           <div className="footer-left">
-            <img src="/images/juniorjoy.jpg" alt="Junior Joy Logo" className="footer-logo" />
+            <img src="/logo.png" alt="Junior Joy Logo" className="footer-logo" />
             <div className="footer-company">
               <h3>Junior Joy POS</h3>
               <p>Professional Point of Sale System</p>

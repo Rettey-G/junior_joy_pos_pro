@@ -89,18 +89,18 @@ p {
 .navbar {
   background-color: var(--primary-color);
   color: white;
-  padding: 8px 0; /* Reduced padding */
+  padding: 0; /* Remove padding */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 1000;
-  box-shadow: 0 2px 8px rgba(33,150,243,0.09);
-  height: 60px; /* Fixed height */
+  box-shadow: 0 2px 8px rgba(33,150,243,0.2);
+  height: 56px; /* Reduced fixed height */
 }
 
 body {
-  padding-top: 70px; /* Adjusted to match the new navbar height plus a small gap */
+  padding-top: 65px; /* Adjusted to match the navbar height plus a small gap */
 }
 
 .navbar-container {
@@ -115,7 +115,7 @@ body {
 
 .navbar-brand {
   font-weight: bold;
-  font-size: 1.1rem; /* Further reduced font size */
+  font-size: 1rem; /* Reduced font size */
   text-decoration: none;
   color: white;
   display: flex;
@@ -124,9 +124,14 @@ body {
   white-space: nowrap;
 }
 
+.brand-text {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .navbar-logo {
-  width: 40px; /* Further reduced logo size */
-  height: 40px; /* Further reduced logo size */
+  width: 36px; /* Smaller logo size */
+  height: 36px; /* Smaller logo size */
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid white;
@@ -151,21 +156,24 @@ body {
   background: transparent;
   color: white;
   border: none;
-  padding: 5px 8px; /* Further reduced padding */
+  padding: 6px 10px;
   border-radius: var(--border-radius);
   cursor: pointer;
-  font-size: 0.85rem; /* Even smaller font */
-  transition: background-color 0.2s;
-  margin: 0 1px; /* Reduced margins */
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  margin: 0 1px;
+  white-space: nowrap;
 }
 
 .nav-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .nav-button.active {
   background-color: white;
   color: var(--primary-color);
+  font-weight: 500;
 }
 
 .logout-button {
@@ -181,23 +189,25 @@ body {
   display: none;
   flex-direction: column;
   justify-content: space-between;
-  width: 30px;
-  height: 21px;
+  width: 24px;
+  height: 18px;
   cursor: pointer;
   z-index: 1010;
+  margin-left: 10px;
+  padding: 0;
 }
 
 .hamburger-menu span {
   display: block;
-  height: 3px;
+  height: 2px;
   width: 100%;
   background-color: white;
-  border-radius: 3px;
+  border-radius: 2px;
   transition: all 0.3s ease;
 }
 
 .hamburger-menu.active span:nth-child(1) {
-  transform: translateY(9px) rotate(45deg);
+  transform: translateY(8px) rotate(45deg);
 }
 
 .hamburger-menu.active span:nth-child(2) {
@@ -205,37 +215,41 @@ body {
 }
 
 .hamburger-menu.active span:nth-child(3) {
-  transform: translateY(-9px) rotate(-45deg);
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 /* Mobile navigation */
 .mobile-nav {
   position: fixed;
-  top: 60px;
+  top: 56px; /* Match navbar height */
   left: 0;
   width: 100%;
   height: 0;
   background-color: var(--primary-dark);
   overflow: hidden;
-  transition: height 0.3s ease;
+  transition: height 0.3s ease, padding 0.3s ease;
   z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .mobile-nav.active {
-  height: calc(100vh - 60px);
+  height: calc(100vh - 56px); /* Match navbar height */
   padding: var(--spacing-md) 0;
   overflow-y: auto;
 }
 
 .mobile-nav button {
-  width: 80%;
-  margin: 5px 0;
-  padding: 10px;
+  width: 90%;
+  margin: 6px 0;
+  padding: 12px;
   text-align: center;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
 }
 
 /* Media queries for responsive design */
@@ -264,13 +278,107 @@ body {
   }
   
   .navbar-brand {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
   .navbar-logo {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
+    margin-right: 4px;
   }
+  
+  .nav-button {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+  
+  body {
+    padding-top: 60px; /* Slightly reduced for mobile */
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .footer-left, .footer-center, .footer-right {
+    margin-bottom: 15px;
+    width: 100%;
+  }
+  
+  .footer-company h3 {
+    margin-top: 10px;
+  }
+}
+
+/* Footer Styles */
+.modern-footer {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 20px 0;
+  margin-top: 40px;
+  box-shadow: 0 -2px 8px rgba(33,150,243,0.2);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+}
+
+.footer-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  margin-right: 10px;
+  box-shadow: 0 2px 8px rgba(255,255,255,0.2);
+  background-color: white;
+}
+
+.footer-company h3 {
+  font-size: 1rem;
+  margin: 0 0 5px 0;
+  font-weight: 500;
+}
+
+.footer-company p {
+  font-size: 0.8rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.footer-center {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.footer-right {
+  text-align: right;
+}
+
+.backend-status {
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.status-success {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.status-error {
+  color: #f44336;
+  font-weight: 500;
 }
 
 /* Forms */
