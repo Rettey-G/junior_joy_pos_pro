@@ -18,10 +18,37 @@ import './styles.css';
 // Navigation component
 const Navigation = ({ onNavigate, currentPage }) => {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+  
+  const handleNavigation = (page) => {
+    onNavigate(page);
+    setMobileMenuOpen(false); // Close mobile menu after navigation
+  };
+  
+  // Navigation buttons array to avoid repetition
+  const navButtons = [
+    { id: 'products', label: 'Products' },
+    { id: 'sales', label: 'New Sale' },
+    { id: 'bills', label: 'Bills' },
+    { id: 'employees', label: 'Employees' },
+    { id: 'reports', label: 'Sales Reports' },
+    { id: 'invoices', label: 'Invoices' },
+    { id: 'invoice', label: 'Latest Invoice' },
+    { id: 'dashboard', label: 'Dashboard' },
+  ];
+  
+  // If user is admin, add Users page
+  if (isAdmin) {
+    navButtons.push({ id: 'users', label: 'Users' });
+  }
   
   return (
     <nav className="navbar fixed-navbar">
-      <div className="container navbar-container">
+      <div className="navbar-container">
         <div className="navbar-brand">
           <img 
             src="https://i.imgur.com/8bGJQem.png" 
@@ -36,67 +63,53 @@ const Navigation = ({ onNavigate, currentPage }) => {
         </div>
         
         {isAuthenticated ? (
-          <div className="d-flex align-items-center">
-            <div className="navbar-welcome">
-              Welcome, {safeRender(user?.name)} ({safeRender(user?.role)})
-            </div>
-            <div className="navbar-nav">
-              <button 
-                onClick={() => onNavigate('products')}
-                className={`nav-button ${currentPage === 'products' ? 'active' : ''}`}
-              >
-                Products
-              </button>
-              <button 
-                onClick={() => onNavigate('sales')}
-                className={`nav-button ${currentPage === 'sales' ? 'active' : ''}`}
-              >
-                New Sale
-              </button>
-              <button 
-                onClick={() => onNavigate('bills')}
-                className={`nav-button ${currentPage === 'bills' ? 'active' : ''}`}
-              >
-                Bills
-              </button>
-              <button 
-                onClick={() => onNavigate('employees')}
-                className={`nav-button ${currentPage === 'employees' ? 'active' : ''}`}
-              >
-                Employees
-              </button>
-              <button 
-                onClick={() => onNavigate('reports')}
-                className={`nav-button ${currentPage === 'reports' ? 'active' : ''}`}
-              >
-                Sales Reports
-              </button>
-              <button 
-                onClick={() => onNavigate('invoices')}
-                className={`nav-button ${currentPage === 'invoices' ? 'active' : ''}`}
-              >
-                Invoices
-              </button>
-              <button 
-                onClick={() => onNavigate('invoice')}
-                className={`nav-button ${currentPage === 'invoice' ? 'active' : ''}`}
-              >
-                Latest Invoice
-              </button>
-              <button 
-                onClick={() => onNavigate('dashboard')}
-                className={`nav-button ${currentPage === 'dashboard' ? 'active' : ''}`}
-              >
-                Dashboard
-              </button>
-              {isAdmin && (
+          <>
+            <div className="d-flex align-items-center">
+              <div className="navbar-welcome">
+                Welcome, {safeRender(user?.name)} ({safeRender(user?.role)})
+              </div>
+              
+              {/* Desktop Navigation */}
+              <div className="navbar-nav">
+                {navButtons.map(button => (
+                  <button 
+                    key={button.id}
+                    onClick={() => handleNavigation(button.id)}
+                    className={`nav-button ${currentPage === button.id ? 'active' : ''}`}
+                  >
+                    {button.label}
+                  </button>
+                ))}
                 <button 
-                  onClick={() => onNavigate('users')}
-                  className={`nav-button ${currentPage === 'users' ? 'active' : ''}`}
+                  onClick={logout}
+                  className="nav-button logout-button"
                 >
-                  Users
+                  Logout
                 </button>
-              )}
+              </div>
+              
+              {/* Hamburger Menu */}
+              <div 
+                className={`hamburger-menu ${mobileMenuOpen ? 'active' : ''}`} 
+                onClick={toggleMobileMenu}
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+            
+            {/* Mobile Navigation */}
+            <div className={`mobile-nav ${mobileMenuOpen ? 'active' : ''}`}>
+              {navButtons.map(button => (
+                <button 
+                  key={button.id}
+                  onClick={() => handleNavigation(button.id)}
+                  className={`nav-button ${currentPage === button.id ? 'active' : ''}`}
+                >
+                  {button.label}
+                </button>
+              ))}
               <button 
                 onClick={logout}
                 className="nav-button logout-button"
@@ -104,11 +117,11 @@ const Navigation = ({ onNavigate, currentPage }) => {
                 Logout
               </button>
             </div>
-          </div>
+          </>
         ) : (
           <div>
             <button 
-              onClick={() => onNavigate('login')}
+              onClick={() => handleNavigation('login')}
               className="nav-button"
             >
               Login
