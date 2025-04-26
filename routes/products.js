@@ -30,11 +30,15 @@ router.post('/', async (req, res) => {
   const product = new Product({
     name: req.body.name,
     price: req.body.price,
+    costPrice: req.body.costPrice || 0,
     category: req.body.category,
     description: req.body.description,
     imageUrl: req.body.imageUrl,
-    stock: req.body.stock,
-    barcode: req.body.barcode
+    SOH: req.body.SOH || req.body.stock,
+    barcode: req.body.barcode,
+    code: req.body.code,
+    details: req.body.details,
+    specs: req.body.specs
   });
 
   try {

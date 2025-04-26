@@ -99,7 +99,14 @@ const Sales = () => {
   };
 
   const updateQuantity = (productId, newQuantity) => {
-    if (newQuantity < 1) return;
+    // If quantity is zero, remove the item from cart
+    if (newQuantity === 0) {
+      removeFromCart(productId);
+      return;
+    }
+    
+    // If quantity is negative, don't update
+    if (newQuantity < 0) return;
     
     setCart(cart.map(item => 
       item._id === productId 
@@ -468,16 +475,6 @@ const Sales = () => {
                     <h5 className="mb-0">Products</h5>
                   </div>
                   <div className="card-body">
-                    <div className="form-group mb-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Search products..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
-                    
                     {loading ? (
                       <div className="text-center">
                         <div className="spinner-border" role="status">
@@ -494,7 +491,7 @@ const Sales = () => {
                           <div key={product._id} className="product-card" onClick={() => addToCart(product)}>
                             <div className="product-name">{product.name}</div>
                             <div className="product-price">{formatCurrency(product.price)}</div>
-                            <div className="product-stock">Stock: {product.stock}</div>
+                            <div className="product-stock">Stock: {product.SOH}</div>
                           </div>
                         ))}
                       </div>

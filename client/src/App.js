@@ -52,10 +52,10 @@ const Navigation = ({ onNavigate, currentPage }) => {
       <div className="navbar-container">
         <div className="navbar-brand">
           <img 
-            src="/logo.png" 
+            src="https://i.imgur.com/8bGJQem.png" 
             alt="Junior Joy Logo" 
             className="navbar-logo" 
-            style={{ height: '50px', marginRight: '10px' }}
+            style={{ height: '65px', marginRight: '10px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #bbdefb' }}
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';            
@@ -238,6 +238,7 @@ const ProductManagement = () => {
     code: '',
     name: '',
     price: '',
+    costPrice: '',
     details: '',
     specs: '',
     imageUrl: '',
@@ -273,12 +274,14 @@ const ProductManagement = () => {
       await createProduct({
         ...newProduct,
         price: parseFloat(newProduct.price),
+        costPrice: parseFloat(newProduct.costPrice) || 0,
         SOH: parseInt(newProduct.SOH, 10)
       });
       setNewProduct({
         code: '',
         name: '',
         price: '',
+        costPrice: '',
         details: '',
         specs: '',
         imageUrl: '',
@@ -297,6 +300,7 @@ const ProductManagement = () => {
       await updateProduct(editingProduct._id, {
         ...editingProduct,
         price: parseFloat(editingProduct.price),
+        costPrice: parseFloat(editingProduct.costPrice) || 0,
         SOH: parseInt(editingProduct.SOH, 10)
       });
       setEditingProduct(null);
@@ -422,6 +426,15 @@ const ProductManagement = () => {
                       />
                     </div>
                     <div className="form-group">
+                      <label className="form-label">Cost Price (MVR):</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={newProduct.costPrice}
+                        onChange={(e) => setNewProduct({...newProduct, costPrice: e.target.value})}
+                      />
+                    </div>
+                    <div className="form-group">
                       <label className="form-label">Category:</label>
                       <input
                         type="text"
@@ -521,6 +534,15 @@ const ProductManagement = () => {
                 />
               </div>
               <div className="form-group">
+                <label className="form-label">Cost Price (MVR):</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={editingProduct.costPrice || 0}
+                  onChange={(e) => setEditingProduct({...editingProduct, costPrice: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
                 <label className="form-label">Category:</label>
                 <input
                   type="text"
@@ -587,6 +609,7 @@ const ProductManagement = () => {
                   <th>Code</th>
                   <th>Name</th>
                   <th>Price (MVR)</th>
+                  <th>Cost (MVR)</th>
                   <th>Category</th>
                   <th>SOH</th>
                   <th>Actions</th>
@@ -598,6 +621,7 @@ const ProductManagement = () => {
                     <td>{product.code}</td>
                     <td>{product.name}</td>
                     <td>{product.price.toFixed(2)}</td>
+                    <td>{(product.costPrice || 0).toFixed(2)}</td>
                     <td>{product.category}</td>
                     <td className={product.SOH > 10 ? 'stock-available' : product.SOH > 0 ? 'stock-low' : 'stock-out'}>
                       {product.SOH}

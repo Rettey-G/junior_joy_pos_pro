@@ -87,7 +87,14 @@ const NewInvoice = () => {
   };
 
   const updateQuantity = (productId, newQuantity) => {
-    if (newQuantity < 1) return;
+    // If quantity is zero, remove the item from cart
+    if (newQuantity === 0) {
+      removeFromCart(productId);
+      return;
+    }
+    
+    // If quantity is negative, don't update
+    if (newQuantity < 0) return;
     
     setCart(cart.map(item => 
       item._id === productId 
