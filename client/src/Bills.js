@@ -42,9 +42,14 @@ const Bills = () => {
   };
 
   const handleLineChange = (idx, field, value) => {
-    setEditLines(lines => lines.map((line, i) =>
-      i === idx ? { ...line, [field]: field === 'quantity' || field === 'price' ? Number(value) : value } : line
-    ));
+    if (field === 'quantity' && Number(value) === 0) {
+      // Remove the item if quantity is set to zero
+      setEditLines(lines => lines.filter((_, i) => i !== idx));
+    } else {
+      setEditLines(lines => lines.map((line, i) =>
+        i === idx ? { ...line, [field]: field === 'quantity' || field === 'price' ? Number(value) : value } : line
+      ));
+    }
   };
 
   // State for editing bill details
@@ -207,7 +212,7 @@ const Bills = () => {
                 <span>MVR ${(bill.gst || 0).toFixed(2)}</span>
               </div>
               <div class="total-row">
-                <span>Service Charge (10%):</span>
+                <span>SC (10%):</span>
                 <span>MVR ${(bill.serviceCharge || 0).toFixed(2)}</span>
               </div>
               <div class="total-row">
@@ -358,7 +363,7 @@ const Bills = () => {
                             />
                           </div>
                           <div className="form-group" style={{marginRight: '20px', minWidth: '200px'}}>
-                            <label>Service Charge (10%):</label>
+                            <label>SC (10%):</label>
                             <input 
                               type="number" 
                               className="form-control" 

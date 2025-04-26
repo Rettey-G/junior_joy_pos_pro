@@ -11,6 +11,7 @@ import Invoice from './Invoice.js';
 import NewInvoice from './NewInvoice.js';
 import Users from './Users.js';
 import Invoices from './Invoices.js';
+import Customers from './Customers.js';
 import api, { getProducts, createProduct, updateProduct, deleteProduct } from './api';
 import { safeRender } from './utils';
 import './styles.css';
@@ -34,6 +35,7 @@ const Navigation = ({ onNavigate, currentPage }) => {
     { id: 'products', label: 'Products' },
     { id: 'sales', label: 'New Sale' },
     { id: 'bills', label: 'Bills' },
+    { id: 'customers', label: 'Customers' },
     { id: 'employees', label: 'Employees' },
     { id: 'reports', label: 'Sales Reports' },
     { id: 'invoices', label: 'Invoices' },
@@ -50,9 +52,10 @@ const Navigation = ({ onNavigate, currentPage }) => {
       <div className="navbar-container">
         <div className="navbar-brand">
           <img 
-            src="https://i.imgur.com/8bGJQem.png" 
+            src="/logo.png" 
             alt="Junior Joy Logo" 
             className="navbar-logo" 
+            style={{ height: '50px', marginRight: '10px' }}
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMxOTc2ZDIiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+Skg8L3RleHQ+PC9zdmc+';            
@@ -180,6 +183,8 @@ const MainApp = () => {
         return <Sales />;
       case 'bills':
         return <Bills />;
+      case 'customers':
+        return <Customers />;
       case 'employees':
         return <Employees />;
       case 'reports':

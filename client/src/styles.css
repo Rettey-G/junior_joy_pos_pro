@@ -467,6 +467,125 @@ textarea.form-control {
   margin-bottom: 20px;
 }
 
+/* Customer page styles */
+.customers-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-container {
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.membership-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.membership-badge.none {
+  background-color: #e0e0e0;
+  color: #666;
+}
+
+.membership-badge.silver {
+  background-color: #C0C0C0;
+  color: #333;
+}
+
+.membership-badge.gold {
+  background-color: #FFD700;
+  color: #333;
+}
+
+.membership-badge.platinum {
+  background-color: #E5E4E2;
+  color: #333;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.customer-stats {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.stat-item {
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.sale-items-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.9rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 20px;
+}
+
+.pagination-button {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.pagination-button.active {
+  background-color: #1976d2;
+  color: white;
+  border-color: #1976d2;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;

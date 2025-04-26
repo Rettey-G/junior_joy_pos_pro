@@ -550,7 +550,7 @@ const Sales = () => {
           <div className="cart-totals" style={{marginTop: 16}}>
             <div className="total-row"><span>Subtotal:</span> <span>MVR {calculateSubtotal().toFixed(2)}</span></div>
             <div className="total-row"><span>GST (16%):</span> <span>MVR {calculateGST().toFixed(2)}</span></div>
-            <div className="total-row"><span>Service Charge (10%):</span> <span>MVR {calculateServiceCharge().toFixed(2)}</span></div>
+            <div className="total-row"><span>SC (10%):</span> <span>MVR {calculateServiceCharge().toFixed(2)}</span></div>
             <div className="total-row"><span>Discount:</span> <span>- MVR {calculateDiscount().toFixed(2)}</span></div>
             <div className="total-row grand-total"><span>Total:</span> <span>MVR {calculateTotal().toFixed(2)}</span></div>
             <div className="total-row"><span>Change:</span> <span>MVR {calculateChange().toFixed(2)}</span></div>
@@ -576,7 +576,7 @@ const Sales = () => {
                 <p style={{margin: '4px 0 0 0', color: '#666'}}>Professional Point of Sale System</p>
               </div>
               <img 
-                src="https://i.imgur.com/8bGJQem.png" 
+                src="/logo.png" 
                 alt="Junior Joy Logo" 
                 style={{width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid #bbdefb', boxShadow: '0 2px 8px rgba(33,150,243,0.15)'}} 
                 onError={(e) => {
@@ -585,7 +585,7 @@ const Sales = () => {
                 }}
               />
             </div>
-            <div style={{fontSize: '1.1rem', marginTop: 16, textAlign: 'center', fontWeight: 'bold'}}>INVOICE</div>
+            <div style={{fontSize: '1.1rem', marginTop: 16, textAlign: 'center', fontWeight: 'bold'}}>BILL</div>
             <div style={{marginTop: 8, textAlign: 'center'}}>Bill No: {completedSale.billNumber}</div>
             <div style={{textAlign: 'center'}}>Date: {new Date(completedSale.createdAt || Date.now()).toLocaleString()}</div>
           </div>

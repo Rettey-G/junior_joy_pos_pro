@@ -70,4 +70,12 @@ export const createEmployee = (employeeData) => api.post('/api/employees', emplo
 export const updateEmployee = (id, employeeData) => api.patch(`/api/employees/${id}`, employeeData);
 export const deleteEmployee = (id) => api.delete(`/api/employees/${id}`);
 
+// Customer API functions
+export const getCustomers = (page = 1, limit = 10, search = '') => api.get(`/api/customers?page=${page}&limit=${limit}&search=${search}`);
+export const getCustomer = (id) => api.get(`/api/customers/${id}`);
+export const createCustomer = (customerData) => api.post('/api/customers', customerData);
+export const updateCustomer = (id, customerData) => api.put(`/api/customers/${id}`, customerData);
+export const deleteCustomer = (id) => api.delete(`/api/customers/${id}`);
+export const getCustomerSales = (id) => api.get(`/api/customers/${id}/sales`);
+
 export default api;
