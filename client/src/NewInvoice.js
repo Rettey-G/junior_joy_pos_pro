@@ -225,9 +225,17 @@ const NewInvoice = () => {
     const doc = new jsPDF();
     
     // Add business logo and info
-    doc.setFontSize(20);
-    doc.setTextColor(25, 118, 210); // #1976d2
-    doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+    try {
+      // Add logo image
+      const imgData = '/juniorjoy.jpg';
+      doc.addImage(imgData, 'JPEG', 85, 10, 40, 20);
+    } catch (e) {
+      console.error('Error adding logo to PDF:', e);
+      // Fallback to text if image fails
+      doc.setFontSize(20);
+      doc.setTextColor(25, 118, 210); // #1976d2
+      doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+    }
     
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);

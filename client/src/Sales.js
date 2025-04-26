@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext.js';
-import api from './api';
+import api, { createSale, getProducts } from './api';
 import { safeRender, formatCurrency } from './utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -33,15 +33,17 @@ const Sales = () => {
     generateBillNumber();
   }, []);
 
+  // Fetch products from API
   const fetchProducts = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await api.get('/api/products?limit=1000'); // Increase limit to get all products
-      setProducts(response.data);
-      setError(null);
+      const response = await getProducts();
+      if (response && response.data) {
+        setProducts(response.data);
+      }
     } catch (err) {
       console.error('Error fetching products:', err);
-      setError('Failed to fetch products. Please try again.');
+      setError('Failed to load products: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -183,7 +185,8 @@ const Sales = () => {
       };
 
       // Save sale to database
-      const response = await api.post('/api/sales', saleData);
+      // Use the imported createSale function from api.js
+      const response = await createSale(saleData);
       
       // Update completed sale state
       if (response && response.data) {
@@ -315,7 +318,7 @@ const Sales = () => {
           <div class="totals">
             <div class="total-row"><span>Subtotal:</span> <span>MVR ${completedSale.subtotal.toFixed(2)}</span></div>
             <div class="total-row"><span>GST:</span> <span>MVR ${completedSale.gst.toFixed(2)}</span></div>
-            <div class="total-row"><span>Service Charge:</span> <span>MVR ${completedSale.serviceCharge.toFixed(2)}</span></div>
+            <div class="total-row"><span>Service Charge (10%):</span> <span>MVR ${completedSale.serviceCharge.toFixed(2)}</span></div>
             <div class="total-row"><span>Discount:</span> <span>- MVR ${completedSale.discount.toFixed(2)}</span></div>
             <div class="total-row grand-total"><span>Total:</span> <span>MVR ${completedSale.total.toFixed(2)}</span></div>
             <div class="total-row"><span>Paid:</span> <span>MVR ${completedSale.amountPaid.toFixed(2)}</span></div>
@@ -371,9 +374,17 @@ const Sales = () => {
       const doc = new jsPDF();
       
       // Add business logo and info
-      doc.setFontSize(20);
-      doc.setTextColor(25, 118, 210); // #1976d2
-      doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+      try {
+        // Add logo image
+        const imgData = '/juniorjoy.jpg';
+        doc.addImage(imgData, 'JPEG', 85, 10, 40, 20);
+      } catch (e) {
+        console.error('Error adding logo to PDF:', e);
+        // Fallback to text if image fails
+        doc.setFontSize(20);
+        doc.setTextColor(25, 118, 210); // #1976d2
+        doc.text('Junior Joy POS', 105, 20, { align: 'center' });
+      }
       
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);

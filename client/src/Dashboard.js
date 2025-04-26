@@ -5,7 +5,7 @@ import { safeRender, formatDate, formatCurrency } from './utils';
 
 const Dashboard = () => {
   const { user, isAuthenticated, isAdmin } = useAuth();
-  const [reportPeriod, setReportPeriod] = useState('daily');
+  const [reportPeriod, setReportPeriod] = useState('day');
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,7 +45,12 @@ const Dashboard = () => {
           try {
             // Force cache bypass by adding a timestamp parameter
             const timestamp = new Date().getTime();
-            response = await getSalesReport(reportPeriod, null, null, timestamp);
+            // Make sure we're using the correct period format that backend expects
+            const period = reportPeriod === 'daily' ? 'day' : 
+                          reportPeriod === 'weekly' ? 'week' : 
+                          reportPeriod === 'monthly' ? 'month' : 
+                          reportPeriod === 'yearly' ? 'year' : reportPeriod;
+            response = await getSalesReport(period, null, null, timestamp);
           } catch (apiError) {
             console.error('API Error:', apiError);
             // Create a fallback response with empty data

@@ -125,8 +125,8 @@ const SalesReports = () => {
     
     sales.forEach(sale => {
       const cashierName = typeof sale.cashier === 'object' ? 
-        (sale.cashier.name || 'Unknown') : 
-        (sale.cashier || 'Unknown');
+        (sale.cashier.name || sale.cashier.username || 'Unknown') : 
+        (typeof sale.cashier === 'string' ? sale.cashier : 'Unknown');
       
       if (!cashierMap[cashierName]) {
         cashierMap[cashierName] = {
@@ -456,7 +456,7 @@ const SalesReports = () => {
                         <tr key={sale._id || idx}>
                           <td>{sale.createdAt ? new Date(sale.createdAt).toLocaleString() : ''}</td>
                           <td>{safeRender(sale.billNumber)}</td>
-                          <td>{typeof sale.cashier === 'object' ? safeRender(sale.cashier.name) : safeRender(sale.cashier)}</td>
+                          <td>{typeof sale.cashier === 'object' ? safeRender(sale.cashier.name || sale.cashier.username || 'Unknown') : safeRender(sale.cashier || 'Unknown')}</td>
                           <td>{safeRender(sale.customer)}</td>
                           <td>
                             <ul style={{paddingLeft: 16, margin: 0}}>

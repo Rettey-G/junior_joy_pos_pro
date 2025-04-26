@@ -333,7 +333,7 @@ const Bills = () => {
                               <tr key={idx}>
                                 <td>{line.name}</td>
                                 <td>
-                                  <input type="number" min={1} value={line.quantity} onChange={e => handleLineChange(idx, 'quantity', e.target.value)} style={{width: 60}} />
+                                  <input type="number" min={0} value={line.quantity} onChange={e => handleLineChange(idx, 'quantity', e.target.value)} style={{width: 60}} />
                                 </td>
                                 <td>
                                   <input type="number" min={0} value={line.price} onChange={e => handleLineChange(idx, 'price', e.target.value)} style={{width: 80}} />
@@ -363,7 +363,7 @@ const Bills = () => {
                             />
                           </div>
                           <div className="form-group" style={{marginRight: '20px', minWidth: '200px'}}>
-                            <label>SC (10%):</label>
+                            <label>Service Charge (10%):</label>
                             <input 
                               type="number" 
                               className="form-control" 
@@ -436,7 +436,7 @@ const Bills = () => {
                 <div className="bill-view" id="bill-to-print">
                   <div className="text-center mb-4">
                     <img 
-                      src="https://i.imgur.com/8bGJQem.png" 
+                      src="/juniorjoy.jpg" 
                       alt="Junior Joy Logo" 
                       style={{ height: '70px', marginBottom: '10px' }} 
                       onError={(e) => {

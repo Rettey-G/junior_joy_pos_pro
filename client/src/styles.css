@@ -89,53 +89,48 @@ p {
 .navbar {
   background-color: var(--primary-color);
   color: white;
-  padding: var(--spacing-sm) var(--spacing-md);
-  box-shadow: var(--shadow);
-  margin-bottom: var(--spacing-xl);
-  position: relative;
-  height: auto;
-  min-height: 60px; /* Reduced minimum height */
-}
-
-.fixed-navbar {
+  padding: 8px 0; /* Reduced padding */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(33,150,243,0.09);
+  box-shadow: 0 2px 8px rgba(33,150,243,0.09);
+  height: 60px; /* Fixed height */
 }
 
 body {
-  padding-top: 80px; /* Reduced to match the new navbar height */
+  padding-top: 70px; /* Adjusted to match the new navbar height plus a small gap */
 }
 
 .navbar-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
+  max-width: 1100px; /* Narrower container */
   margin: 0 auto;
   padding: 0 var(--spacing-md);
+  height: 100%;
 }
 
 .navbar-brand {
   font-weight: bold;
-  font-size: 1.2rem; /* Reduced font size */
+  font-size: 1.1rem; /* Further reduced font size */
   text-decoration: none;
   color: white;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .navbar-logo {
-  width: 50px; /* Reduced logo size */
-  height: 50px; /* Reduced logo size */
+  width: 40px; /* Further reduced logo size */
+  height: 40px; /* Further reduced logo size */
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid white;
-  margin-right: 8px;
+  margin-right: 6px;
   box-shadow: 0 2px 8px rgba(255,255,255,0.2);
   background-color: white;
 }
@@ -156,11 +151,12 @@ body {
   background: transparent;
   color: white;
   border: none;
-  padding: 6px 10px; /* Reduced padding */
+  padding: 5px 8px; /* Further reduced padding */
   border-radius: var(--border-radius);
   cursor: pointer;
-  font-size: 0.9rem; /* Smaller font */
+  font-size: 0.85rem; /* Even smaller font */
   transition: background-color 0.2s;
+  margin: 0 1px; /* Reduced margins */
 }
 
 .nav-button:hover {
