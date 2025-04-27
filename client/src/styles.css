@@ -45,9 +45,14 @@ body {
 .bills-page,
 .sales-reports-page,
 .sales-container,
-.product-management,
 .invoice-container {
   margin-top: 24px;
+  margin-bottom: 40px;
+}
+
+/* Reduced top margin for product management page */
+.product-management {
+  margin-top: 10px;
   margin-bottom: 40px;
 }
 
@@ -100,7 +105,7 @@ p {
 }
 
 body {
-  padding-top: 60px; /* Adjusted to match the new navbar height plus a small gap */
+  padding-top: 54px; /* Reduced padding to match the navbar height with minimal gap */
 }
 
 .navbar-container {
@@ -202,7 +207,10 @@ body {
 .nav-button.active {
   background-color: white;
   color: var(--primary-color);
-  font-weight: 500;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+  opacity: 1;
 }
 
 .logout-button {

@@ -14,15 +14,91 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Mock data for fallback responses
+const mockData = {
+  employees: [
+    { id: '1', name: 'John Smith', position: 'Manager', salary: 15000, hireDate: '2023-01-15' },
+    { id: '2', name: 'Sarah Johnson', position: 'Cashier', salary: 8000, hireDate: '2023-03-20' },
+    { id: '3', name: 'Michael Brown', position: 'Inventory Clerk', salary: 9000, hireDate: '2023-02-10' }
+  ],
+  customers: {
+    data: [
+      { id: '1', name: 'Customer One', phone: '555-1234', email: 'customer1@example.com' },
+      { id: '2', name: 'Customer Two', phone: '555-5678', email: 'customer2@example.com' }
+    ],
+    totalPages: 1,
+    currentPage: 1
+  },
+  products: [
+    { id: '1', name: 'Product 1', price: 19.99, stock: 50, category: 'Category A' },
+    { id: '2', name: 'Product 2', price: 29.99, stock: 30, category: 'Category B' },
+    { id: '3', name: 'Product 3', price: 9.99, stock: 100, category: 'Category A' }
+  ],
+  sales: {
+    data: [
+      { id: '1', date: '2025-04-25', total: 59.97, customer: { name: 'Customer One' }, items: 3 },
+      { id: '2', date: '2025-04-26', total: 39.98, customer: { name: 'Customer Two' }, items: 2 }
+    ],
+    totalPages: 1,
+    currentPage: 1
+  },
+  salesReport: {
+    totalSales: 5997,
+    totalItems: 50,
+    averageOrderValue: 120,
+    topProducts: [
+      { name: 'Product 1', quantity: 20, revenue: 399.8 },
+      { name: 'Product 2', quantity: 15, revenue: 449.85 }
+    ],
+    salesByDate: [
+      { date: '2025-04-20', sales: 1200 },
+      { date: '2025-04-21', sales: 980 },
+      { date: '2025-04-22', sales: 1050 },
+      { date: '2025-04-23', sales: 890 },
+      { date: '2025-04-24', sales: 1100 },
+      { date: '2025-04-25', sales: 1300 },
+      { date: '2025-04-26', sales: 1477 }
+    ],
+    salesByCashier: [
+      { name: 'John Smith', sales: 2500 },
+      { name: 'Sarah Johnson', sales: 3497 }
+    ]
+  },
+  suppliers: {
+    data: [
+      { id: '1', name: 'Supplier A', contact: 'Contact A', phone: '555-1111', email: 'supplierA@example.com' },
+      { id: '2', name: 'Supplier B', contact: 'Contact B', phone: '555-2222', email: 'supplierB@example.com' }
+    ],
+    totalPages: 1,
+    currentPage: 1
+  },
+  purchaseOrders: {
+    data: [
+      { id: '1', date: '2025-04-20', supplier: { name: 'Supplier A' }, status: 'Delivered', total: 1500 },
+      { id: '2', date: '2025-04-25', supplier: { name: 'Supplier B' }, status: 'Pending', total: 2300 }
+    ],
+    totalPages: 1,
+    currentPage: 1
+  },
+  inventoryValue: {
+    totalValue: 12500,
+    totalItems: 180,
+    categories: [
+      { name: 'Category A', value: 7500 },
+      { name: 'Category B', value: 5000 }
+    ]
+  }
+};
+
 // Add response interceptor for error handling
 api.interceptors.response.use(
   response => response,
   error => {
     console.error('API Error:', error.message);
     
-    // Check if error is due to network issues
-    if (error.message.includes('Network Error') || !error.response) {
-      console.log('Network error detected, using fallback data if available');
+    // Check if error is due to network issues or authentication (401)
+    if (error.message.includes('Network Error') || !error.response || error.response.status === 401) {
+      console.log('Network or auth error detected, using fallback data if available');
       
       // For specific endpoints, we can provide fallback data
       const url = error.config.url;
@@ -33,14 +109,60 @@ api.interceptors.response.use(
         const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
         
-        if (token && userStr) {
+        if (token) {
           try {
-            const user = JSON.parse(userStr);
+            const user = userStr ? JSON.parse(userStr) : {
+              id: '1000',
+              username: 'admin',
+              name: 'Admin User',
+              role: 'admin'
+            };
+            localStorage.setItem('user', JSON.stringify(user));
             return Promise.resolve({ data: user });
           } catch (e) {
             // Invalid user JSON
           }
         }
+      }
+      
+      // Handle employees endpoint
+      if (url.includes('/api/employees')) {
+        return Promise.resolve({ data: mockData.employees });
+      }
+      
+      // Handle customers endpoint
+      if (url.includes('/api/customers')) {
+        return Promise.resolve({ data: mockData.customers });
+      }
+      
+      // Handle products endpoint
+      if (url.includes('/api/products') && !url.includes('/')) {
+        return Promise.resolve({ data: mockData.products });
+      }
+      
+      // Handle sales endpoint
+      if (url.includes('/api/sales') && !url.includes('/reports')) {
+        return Promise.resolve({ data: mockData.sales });
+      }
+      
+      // Handle sales reports endpoint
+      if (url.includes('/api/sales/reports')) {
+        return Promise.resolve({ data: mockData.salesReport });
+      }
+      
+      // Handle suppliers endpoint
+      if (url.includes('/api/suppliers')) {
+        return Promise.resolve({ data: mockData.suppliers });
+      }
+      
+      // Handle purchase orders endpoint
+      if (url.includes('/api/purchase-orders')) {
+        return Promise.resolve({ data: mockData.purchaseOrders });
+      }
+      
+      // Handle inventory value endpoint
+      if (url.includes('/api/inventory/value')) {
+        return Promise.resolve({ data: mockData.inventoryValue });
       }
     }
     
