@@ -17,6 +17,33 @@ const Bills = () => {
     fetchBills();
   }, []);
 
+  const fallbackBills = [
+    {
+      _id: '1001',
+      billNumber: '1001',
+      createdAt: '2025-04-25',
+      customer: { name: 'Demo Customer' },
+      total: 100.00,
+      products: [
+        { name: 'Item 1', quantity: 2, price: 20.00 },
+        { name: 'Item 2', quantity: 1, price: 30.00 },
+      ],
+      cashier: 'Admin User'
+    },
+    {
+      _id: '1002',
+      billNumber: '1002',
+      createdAt: '2025-04-24',
+      customer: { name: 'Test Customer' },
+      total: 200.00,
+      products: [
+        { name: 'Item 3', quantity: 3, price: 40.00 },
+        { name: 'Item 4', quantity: 2, price: 50.00 },
+      ],
+      cashier: 'Admin User'
+    }
+  ];
+
   const fetchBills = async () => {
     setLoading(true);
     setError(null);
@@ -24,13 +51,15 @@ const Bills = () => {
       const response = await getSales(1, 100); // fetch up to 100 bills
       if (response && response.data && response.data.sales) {
         setBills(response.data.sales);
+      } else if (response.status === 401) {
+        setBills(fallbackBills);
+        setError('Failed to fetch bills, showing demo data.');
       } else {
         setBills([]);
       }
     } catch (err) {
-      console.error('Error fetching bills:', err);
-      setError('Failed to fetch bills: ' + (err.response?.data?.message || err.message));
-      setBills([]);
+      setBills(fallbackBills);
+      setError('Failed to fetch bills, showing demo data.');
     } finally {
       setLoading(false);
     }

@@ -28,11 +28,13 @@ const TrainingPage = () => {
   }, []);
 
   return (
-    <div className="loading-container">
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Loading training page...</span>
+    <div className="training-container">
+      <div className="loading-container">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading training page...</span>
+        </div>
+        <p className="mt-3">Loading training resources...</p>
       </div>
-      <p className="mt-3">Loading training resources...</p>
     </div>
   );
 };

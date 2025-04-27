@@ -37,7 +37,7 @@ body {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px var(--spacing-lg);
+  padding: 32px var(--spacing-lg) 80px var(--spacing-lg);
 }
 
 /* Add proper margins to all page containers */
@@ -45,7 +45,18 @@ body {
 .bills-page,
 .sales-reports-page,
 .sales-container,
-.invoice-container {
+.invoice-container,
+.customers-page,
+.product-management,
+.dashboard-container,
+.training-container,
+.orders-page,
+.suppliers-page,
+.reports-page,
+.inventory-container {
+  margin-top: 24px;
+  margin-bottom: 80px;
+}
   margin-top: 24px;
   margin-bottom: 40px;
 }
