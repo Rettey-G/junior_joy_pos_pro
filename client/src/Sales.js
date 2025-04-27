@@ -17,6 +17,17 @@ const Sales = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [showQuotationModal, setShowQuotationModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    membershipType: 'Regular',
+    notes: ''
+  });
   const [discount, setDiscount] = useState(0);
   const [billNumber, setBillNumber] = useState('');
   const [showBill, setShowBill] = useState(false);
@@ -558,6 +569,31 @@ const Sales = () => {
   };
   // Render loading state
   if (loading) {
+    // Handler for customer modal form input
+    const handleCustomerInputChange = (e) => {
+      const { name, value } = e.target;
+      setNewCustomer((prev) => ({ ...prev, [name]: value }));
+    };
+
+    // Handler for submitting new customer
+    const handleAddCustomer = async (e) => {
+      e.preventDefault();
+      try {
+        const response = await api.post('/api/customers', newCustomer);
+        if (response.data) {
+          setCustomerName(newCustomer.name);
+          setCustomerPhone(newCustomer.phone);
+          setShowCustomerModal(false);
+          setNewCustomer({
+            name: '', phone: '', email: '', address: '', membershipType: 'Regular', notes: ''
+          });
+          alert('Customer added successfully!');
+        }
+      } catch (error) {
+        alert('Failed to add customer.');
+      }
+    };
+
     return (
       <div className="sales-container">
         <div className="loading-container">
@@ -596,6 +632,49 @@ const Sales = () => {
         </div>
       )}
 
+      {/* Customer Modal Popup */}
+      {showCustomerModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Add New Customer</h3>
+            <form onSubmit={handleAddCustomer}>
+              <div className="form-group">
+                <label>Name*</label>
+                <input name="name" className="form-control" value={newCustomer.name} onChange={handleCustomerInputChange} required />
+              </div>
+              <div className="form-group">
+                <label>Phone</label>
+                <input name="phone" className="form-control" value={newCustomer.phone} onChange={handleCustomerInputChange} />
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input name="email" className="form-control" value={newCustomer.email} onChange={handleCustomerInputChange} />
+              </div>
+              <div className="form-group">
+                <label>Address</label>
+                <input name="address" className="form-control" value={newCustomer.address} onChange={handleCustomerInputChange} />
+              </div>
+              <div className="form-group">
+                <label>Membership Type</label>
+                <select name="membershipType" className="form-control" value={newCustomer.membershipType} onChange={handleCustomerInputChange}>
+                  <option value="Regular">Regular</option>
+                  <option value="VIP">VIP</option>
+                  <option value="None">None</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Notes</label>
+                <textarea name="notes" className="form-control" value={newCustomer.notes} onChange={handleCustomerInputChange} />
+              </div>
+              <div className="modal-actions">
+                <button type="submit" className="btn btn-primary">Save</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowCustomerModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Main Content - Show either the sales form or the bill */}
       {!showBill ? (
         <div className="sales-layout">
@@ -626,6 +705,13 @@ const Sales = () => {
                     placeholder="Enter phone number..." 
                   />
                 </div>
+                <button 
+                  type="button"
+                  className="btn btn-sm btn-primary mt-2" 
+                  onClick={() => setShowCustomerModal(true)}
+                >
+                  Add New Customer
+                </button>
               </div>
             </div>
 
