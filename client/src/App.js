@@ -58,17 +58,17 @@ const Navigation = ({ onNavigate, currentPage }) => {
       { id: 'products', label: 'Products' },
       { id: 'sales', label: 'New Sale' },
       { id: 'bills', label: 'Bills' },
+      { id: 'customers', label: 'Customers' },
     ],
     secondary: [
-      { id: 'customers', label: 'Customers' },
       { id: 'employees', label: 'Employees' },
       { id: 'inventory', label: 'Inventory' },
       { id: 'suppliers', label: 'Suppliers' },
+      { id: 'purchase-orders', label: 'Orders' },
     ],
     reports: [
       { id: 'reports', label: 'Reports' },
       { id: 'invoices', label: 'Invoices' },
-      { id: 'purchase-orders', label: 'Orders' },
       { id: 'training', label: 'Training' },
     ],
     admin: isAdmin ? [{ id: 'users', label: 'Users' }] : []
@@ -94,7 +94,7 @@ const Navigation = ({ onNavigate, currentPage }) => {
           <>
             <div className="d-flex align-items-center">
               <div className="navbar-welcome">
-                Welcome, {safeRender(user?.name)} ({safeRender(user?.role)})
+                {safeRender(user?.name)}
               </div>
               
               {/* Desktop Navigation - Organized by groups */}

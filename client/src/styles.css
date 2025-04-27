@@ -107,11 +107,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1000px; /* Even narrower container */
+  max-width: 1200px; /* Wider container to fit all items */
   margin: 0 auto;
   padding: 0 var(--spacing-md);
   height: 100%;
-  overflow-x: auto; /* Allow horizontal scrolling if needed */
 }
 
 .navbar-brand {
@@ -123,7 +122,7 @@ body {
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  min-width: 160px; /* Ensure brand has enough space */
+  min-width: 140px; /* Slightly reduced min-width */
 }
 
 .brand-text {
@@ -156,43 +155,35 @@ body {
   display: flex;
   align-items: center;
   gap: 2px; /* Reduced gap between nav buttons */
-  flex-wrap: nowrap; /* Prevent wrapping */
-  overflow-x: auto; /* Allow horizontal scrolling */
-  -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
-  scrollbar-width: none; /* Hide scrollbar in Firefox */
-  padding-bottom: 2px; /* Space for potential scrollbar */
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.navbar-nav::-webkit-scrollbar {
-  display: none;
+  flex-wrap: wrap; /* Allow wrapping to prevent overflow */
 }
 
 .nav-button {
   background: transparent;
   color: white;
   border: none;
-  padding: 4px 8px; /* Smaller padding */
+  padding: 3px 6px; /* Even smaller padding */
   border-radius: var(--border-radius);
   cursor: pointer;
-  font-size: 0.8rem; /* Smaller font */
+  font-size: 0.75rem; /* Smaller font */
   transition: all 0.2s ease;
   margin: 0 1px;
   white-space: nowrap;
   min-width: auto; /* Allow buttons to be as narrow as needed */
   opacity: 0.9; /* Slightly transparent by default */
+  letter-spacing: -0.2px; /* Tighter letter spacing */
 }
 
 /* Add visual separation between button groups */
-.navbar-nav button:nth-child(4):after,
-.navbar-nav button:nth-child(8):after,
+.navbar-nav button:nth-child(5):after,
+.navbar-nav button:nth-child(9):after,
 .navbar-nav button:nth-child(12):after {
   content: '';
   display: inline-block;
   width: 1px;
-  height: 20px;
+  height: 16px;
   background-color: rgba(255, 255, 255, 0.3);
-  margin: 0 4px 0 6px;
+  margin: 0 3px 0 4px;
   vertical-align: middle;
 }
 
