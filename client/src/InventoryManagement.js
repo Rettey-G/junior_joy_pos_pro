@@ -12,6 +12,39 @@ import { formatCurrency } from './utils';
 import './styles.css';
 
 const InventoryManagement = () => {
+  // ...existing state
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [addProductForm, setAddProductForm] = useState({
+    code: '',
+    name: '',
+    price: '',
+    costPrice: '',
+    category: '',
+    SOH: '',
+    details: '',
+    specs: '',
+    imageUrl: ''
+  });
+  const [addProductError, setAddProductError] = useState(null);
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    setAddProductError(null);
+    try {
+      await createProduct({
+        ...addProductForm,
+        price: Number(addProductForm.price),
+        costPrice: Number(addProductForm.costPrice),
+        SOH: Number(addProductForm.SOH)
+      });
+      setShowAddProductModal(false);
+      setAddProductForm({ code: '', name: '', price: '', costPrice: '', category: '', SOH: '', details: '', specs: '', imageUrl: '' });
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err) {
+      setAddProductError('Failed to add product.');
+    }
+  };
+
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [products, setProducts] = useState([]);
@@ -294,73 +327,77 @@ const InventoryManagement = () => {
             </button>
           )}
         </div>
-        <button 
-          className="btn btn-primary"
-          onClick={() => {
-            setSelectedProduct(null);
-            setShowAdjustmentModal(true);
-          }}
-        >
-          <i className="fa fa-plus"></i> Adjust Inventory
-        </button>
-      </div>
-      
-      <div className="card">
-        <div className="card-header bg-primary text-white">
-          <h5 className="mb-0">Product Inventory</h5>
+        <div>
+          <button 
+            className="btn btn-success me-2"
+            onClick={() => setShowAddProductModal(true)}
+          >
+            <i className="fa fa-plus"></i> Add Product
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => {
+              setSelectedProduct(null);
+              setShowAdjustmentModal(true);
+            }}
+          >
+            <i className="fa fa-wrench"></i> Adjust Inventory
+          </button>
         </div>
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table table-striped table-hover mb-0">
-              <thead>
+      </div>
+      <div className="card-body p-0">
+        <div className="table-responsive">
+          <table className="table table-striped table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Stock</th>
+                <th>Cost Price</th>
+                <th>Selling Price</th>
+                <th>Value</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProducts.length === 0 ? (
                 <tr>
-                  <th>Code</th>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>Stock</th>
-                  <th>Cost Price</th>
-                  <th>Selling Price</th>
-                  <th>Value</th>
-                  <th>Actions</th>
+                  <td colSpan="8" className="text-center py-3">No products found</td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-3">No products found</td>
+              ) : (
+                filteredProducts.map(product => (
+                  <tr key={product._id}>
+                    <td>{product.code}</td>
+                    <td>{product.name}</td>
+                    <td>{product.category}</td>
+                    <td>
+                      <span className={`badge ${
+                        product.SOH === 0 ? 'bg-danger' : 
+                        product.SOH <= 5 ? 'bg-warning' : 'bg-success'
+                      }`}>
+                        {product.SOH}
+                      </span>
+                    </td>
+                    <td>{formatCurrency(product.costPrice || 0)}</td>
+                    <td>{formatCurrency(product.price)}</td>
+                    <td>{formatCurrency(product.SOH * product.price)}</td>
+                    <td>
+                      <button 
+                        className="btn btn-sm btn-primary"
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setShowAdjustmentModal(true);
+                        }}
+                      >
+                        Adjust
+                      </button>
+                    </td>
                   </tr>
-                ) : (
-                  filteredProducts.map(product => (
-                    <tr key={product._id}>
-                      <td>{product.code}</td>
-                      <td>{product.name}</td>
-                      <td>{product.category}</td>
-                      <td>
-                        <span className={`badge ${
-                          product.SOH === 0 ? 'bg-danger' : 
-                          product.SOH <= 5 ? 'bg-warning' : 'bg-success'
-                        }`}>
-                          {product.SOH}
-                        </span>
-                      </td>
-                      <td>{formatCurrency(product.costPrice || 0)}</td>
-                      <td>{formatCurrency(product.price)}</td>
-                      <td>{formatCurrency(product.SOH * product.price)}</td>
-                      <td>
-                        <button 
-                          className="btn btn-sm btn-primary"
-                          onClick={() => {
-                            setSelectedProduct(product);
-                            setShowAdjustmentModal(true);
-                          }}
-                        >
-                          Adjust
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
+                ))
+              )}
+            </tbody>
+          </table>
             </table>
           </div>
         </div>

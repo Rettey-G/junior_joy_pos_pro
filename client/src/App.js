@@ -578,12 +578,22 @@ const ProductManagement = () => {
 
       {/* Edit Product Form */}
       {editingProduct && (
-        <div className="card mt-4">
-          <div className="card-header">
-            <h3 className="card-title">Edit Product</h3>
-          </div>
-          <div className="card-body">
-            <form onSubmit={handleUpdateProduct}>
+  <div className="modal-overlay" onClick={() => setEditingProduct(null)}>
+    <div className="modal-card landscape-modal" onClick={e => e.stopPropagation()}>
+      <div className="card-header">
+        <h3 className="card-title">Edit Product</h3>
+        <button 
+          type="button" 
+          className="close-button" 
+          onClick={() => setEditingProduct(null)}
+        >
+          &times;
+        </button>
+      </div>
+      <div className="card-body">
+        <form onSubmit={handleUpdateProduct}>
+          <div className="form-row">
+            <div className="form-column">
               <div className="form-group">
                 <label className="form-label">Code:</label>
                 <input
@@ -633,6 +643,8 @@ const ProductManagement = () => {
                   required
                 />
               </div>
+            </div>
+            <div className="form-column">
               <div className="form-group">
                 <label className="form-label">Details:</label>
                 <textarea
@@ -668,14 +680,17 @@ const ProductManagement = () => {
                   required
                 />
               </div>
-              <div className="d-flex gap-2">
-                <button type="submit" className="btn btn-success">Update Product</button>
-                <button type="button" className="btn btn-danger" onClick={() => setEditingProduct(null)}>Cancel</button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
+          <div className="form-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => setEditingProduct(null)}>Cancel</button>
+            <button type="submit" className="btn btn-success">Update Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Product List */}
       <div className="card mt-4">
