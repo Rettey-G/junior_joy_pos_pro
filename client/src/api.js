@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000'
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+  timeout: 10000 // 10 second timeout to prevent hanging requests
 });
 
 // Add auth token to requests
@@ -12,6 +13,40 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('API Error:', error.message);
+    
+    // Check if error is due to network issues
+    if (error.message.includes('Network Error') || !error.response) {
+      console.log('Network error detected, using fallback data if available');
+      
+      // For specific endpoints, we can provide fallback data
+      const url = error.config.url;
+      
+      // Handle auth/me endpoint for getting current user
+      if (url.includes('/api/auth/me')) {
+        // Check if we have a token and user in localStorage
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
+        
+        if (token && userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            return Promise.resolve({ data: user });
+          } catch (e) {
+            // Invalid user JSON
+          }
+        }
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 // Auth API functions
 export const registerUser = (userData) => api.post('/api/auth/register', userData);

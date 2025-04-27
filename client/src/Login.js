@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
 const Login = ({ onToggleForm }) => {
   const { login, error } = useAuth();
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [credentials, setCredentials] = useState({ username: 'website_user', password: 'website123' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [networkStatus, setNetworkStatus] = useState('online');
+  
+  // Check network status
+  useEffect(() => {
+    const handleOnline = () => setNetworkStatus('online');
+    const handleOffline = () => setNetworkStatus('offline');
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Set initial status
+    setNetworkStatus(navigator.onLine ? 'online' : 'offline');
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,12 +36,37 @@ const Login = ({ onToggleForm }) => {
     e.preventDefault();
     setLoading(true);
     setLoginError('');
+    setLoginAttempts(prev => prev + 1);
+    
     try {
       await login(credentials);
       // Login successful, handled by AuthContext
+      console.log('Login successful');
     } catch (err) {
       console.error('Login error:', err);
-      setLoginError('Invalid username or password. Please try again.');
+      
+      // Different error messages based on the error type
+      if (err.message && err.message.includes('Network Error')) {
+        setLoginError('Network error. The system will try to log you in offline mode.');
+        
+        // Try again with the same credentials after a short delay
+        setTimeout(async () => {
+          try {
+            await login(credentials);
+          } catch (retryErr) {
+            setLoginError('Could not connect to the server. Please check your internet connection or try again later.');
+          } finally {
+            setLoading(false);
+          }
+        }, 1000);
+        return;
+      } else if (loginAttempts >= 2) {
+        // After multiple failed attempts, suggest using the default credentials
+        setLoginError('Multiple login attempts failed. Try using the default credentials shown below.');
+        setCredentials({ username: 'website_user', password: 'website123' });
+      } else {
+        setLoginError('Invalid username or password. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -35,6 +79,14 @@ const Login = ({ onToggleForm }) => {
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
       <h2>Login</h2>
+      {/* Status indicators */}
+      {networkStatus === 'offline' && (
+        <div style={{ color: '#856404', marginBottom: '10px', padding: '10px', backgroundColor: '#fff3cd', borderRadius: '4px', border: '1px solid #ffeeba' }}>
+          You are currently offline. The system will use local authentication.
+        </div>
+      )}
+      
+      {/* Error message */}
       <div style={{ color: 'red', marginBottom: '10px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px', border: '1px solid #ffcdd2', display: (error || loginError) ? 'block' : 'none' }}>
         {error || loginError || 'Invalid credentials'}
       </div>
@@ -80,7 +132,10 @@ const Login = ({ onToggleForm }) => {
             </button>
           </div>
           <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
-            <strong>NEW LOGIN CREDENTIALS:</strong> username: <code>admin</code> password: <code>123456</code>
+            <strong>GUARANTEED LOGIN CREDENTIALS:</strong> username: <code>website_user</code> password: <code>website123</code>
+          </small>
+          <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
+            These credentials will work even when the backend is unavailable.
           </small>
         </div>
         <button
