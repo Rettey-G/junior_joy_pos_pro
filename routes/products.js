@@ -59,11 +59,16 @@ router.patch('/:id', async (req, res) => {
     
     if (req.body.name) product.name = req.body.name;
     if (req.body.price) product.price = req.body.price;
+    if (req.body.costPrice !== undefined) product.costPrice = req.body.costPrice;
     if (req.body.category) product.category = req.body.category;
     if (req.body.description) product.description = req.body.description;
+    if (req.body.details) product.details = req.body.details;
+    if (req.body.specs) product.specs = req.body.specs;
     if (req.body.imageUrl) product.imageUrl = req.body.imageUrl;
-    if (req.body.stock !== undefined) product.stock = req.body.stock;
+    if (req.body.SOH !== undefined) product.SOH = req.body.SOH;
+    if (req.body.stock !== undefined) product.SOH = req.body.stock;
     if (req.body.barcode) product.barcode = req.body.barcode;
+    if (req.body.code) product.code = req.body.code;
     
     const updatedProduct = await product.save();
     res.json(updatedProduct);
