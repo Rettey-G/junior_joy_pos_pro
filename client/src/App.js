@@ -389,6 +389,7 @@ const ProductManagement = () => {
   };
 
   const handleDeleteProduct = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this product? This cannot be undone.')) return;
     try {
       await deleteProduct(id);
       fetchProducts();
