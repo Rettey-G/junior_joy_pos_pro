@@ -48,18 +48,33 @@ const Bills = () => {
     setLoading(true);
     setError(null);
     try {
+      console.log("Attempting to fetch bills from API...");
+      const token = localStorage.getItem('token');
+      console.log("Token exists:", !!token);
+      
       const response = await getSales(1, 100); // fetch up to 100 bills
+      console.log("API Response received:", response);
+      
       if (response && response.data && response.data.sales) {
+        console.log("Bills found in DB:", response.data.sales.length);
         setBills(response.data.sales);
-      } else if (response.status === 401) {
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Some APIs might return the array directly
+        console.log("Bills array found in response:", response.data.length);
+        setBills(response.data);
+      } else if (response && response.status === 401) {
+        console.log("Authentication failed - using fallback data");
         setBills(fallbackBills);
-        setError('Failed to fetch bills, showing demo data.');
+        setError('Authentication failed - showing demo data instead.');
       } else {
-        setBills([]);
+        console.log("Unexpected response structure:", response);
+        setBills(fallbackBills);
+        setError('Unexpected API response - showing demo data.');
       }
     } catch (err) {
+      console.error("Error fetching bills:", err);
       setBills(fallbackBills);
-      setError('Failed to fetch bills, showing demo data.');
+      setError(`API Error: ${err.message} - showing demo data.`);
     } finally {
       setLoading(false);
     }
