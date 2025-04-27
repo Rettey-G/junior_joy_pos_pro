@@ -30,9 +30,11 @@ const mockData = {
     currentPage: 1
   },
   products: [
-    { id: '1', name: 'Product 1', price: 19.99, stock: 50, category: 'Category A' },
-    { id: '2', name: 'Product 2', price: 29.99, stock: 30, category: 'Category B' },
-    { id: '3', name: 'Product 3', price: 9.99, stock: 100, category: 'Category A' }
+    { id: '1', name: 'VG GUTTER R2 PIPE CONNECTOR PVC', price: 37.80, stock: 100, category: 'PVC' },
+    { id: '2', name: 'VG GUTTER R2 PIPE LOCK BRACKET PVC', price: 29.16, stock: 100, category: 'PVC' },
+    { id: '3', name: 'VG GUTTER R2 ELBOW 90DEG PVC', price: 61.00, stock: 100, category: 'PVC' },
+    { id: '4', name: 'VG GUTTER R2 PIPE PVC', price: 37.80, stock: 100, category: 'PVC' },
+    { id: '5', name: 'VG GUTTER R2Y ELBOW 90DEG PVC', price: 86.40, stock: 100, category: 'PVC' }
   ],
   sales: {
     data: [
