@@ -49,27 +49,30 @@ const Bills = () => {
     setError(null);
     try {
       console.log("Attempting to fetch bills from API...");
-      const token = localStorage.getItem('token');
-      console.log("Token exists:", !!token);
       
       const response = await getSales(1, 100); // fetch up to 100 bills
       console.log("API Response received:", response);
       
-      if (response && response.data && response.data.sales) {
-        console.log("Bills found in DB:", response.data.sales.length);
-        setBills(response.data.sales);
-      } else if (response && response.data && Array.isArray(response.data)) {
-        // Some APIs might return the array directly
-        console.log("Bills array found in response:", response.data.length);
-        setBills(response.data);
-      } else if (response && response.status === 401) {
-        console.log("Authentication failed - using fallback data");
-        setBills(fallbackBills);
-        setError('Authentication failed - showing demo data instead.');
+      if (response && response.data) {
+        // Check various possible response formats
+        if (response.data.sales && Array.isArray(response.data.sales)) {
+          console.log("Bills found in API response sales array:", response.data.sales.length);
+          setBills(response.data.sales);
+        } else if (Array.isArray(response.data)) {
+          console.log("Bills found in API response array:", response.data.length);
+          setBills(response.data);
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          console.log("Bills found in API response data array:", response.data.data.length);
+          setBills(response.data.data);
+        } else {
+          console.log("No bills array found in response, using fallback data");
+          setBills(fallbackBills);
+          setError('Could not find bills data in API response - showing demo data.');
+        }
       } else {
-        console.log("Unexpected response structure:", response);
+        console.log("Invalid API response structure, using fallback data");
         setBills(fallbackBills);
-        setError('Unexpected API response - showing demo data.');
+        setError('Invalid API response - showing demo data.');
       }
     } catch (err) {
       console.error("Error fetching bills:", err);

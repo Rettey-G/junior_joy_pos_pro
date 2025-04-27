@@ -249,79 +249,136 @@ router.get('/reports/:period', auth, async (req, res) => {
       start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
       // Get the last day of the month
       end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-    } else if (period === 'year' || period === 'yearly' || period === 'annual') {
+    } else if (period === 'year' || period === 'yearly') {
       // Get the first day of the year
       start = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
       // Get the last day of the year
       end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
-    } else if (period === 'custom' && startDate && endDate) {
-      try {
-        start = new Date(startDate);
-        end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-      } catch (err) {
-        return res.status(400).json({ message: 'Invalid date format for custom period' });
+    } else if (period === 'custom') {
+      // Use custom date range if provided
+      if (!startDate || !endDate) {
+        return res.status(400).json({ message: 'Start date and end date are required for custom period' });
       }
+      
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
     } else {
-      return res.status(400).json({ message: 'Invalid period or missing dates for custom period' });
+      return res.status(400).json({ message: 'Invalid period' });
     }
     
-    // Get sales within date range
+    // Find sales within the date range
     const sales = await Sale.find({
       createdAt: { $gte: start, $lte: end },
-      status: 'Completed'
+      status: 'Completed' // Only include completed sales
     }).populate('cashier', 'name');
     
-    // Calculate totals
+    // Calculate summary data
     const totalSales = sales.length;
-    const totalRevenue = sales.reduce((sum, sale) => sum + Number(sale.total || 0), 0);
+    const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
     const averageOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
     
-    // Get product sales breakdown
-    const productMap = {};
+    // Calculate product sales
+    const productSales = [];
+    const productMap = new Map();
     
-    sales.forEach(sale => {
-      sale.products.forEach(item => {
-        const productId = item.product ? item.product.toString() : 'unknown';
-        const productName = item.name || 'Unknown Product';
-        const quantity = Number(item.quantity);
-        const price = Number(item.price);
-        const revenue = quantity * price;
-        
-        if (!productMap[productId]) {
-          productMap[productId] = {
-            id: productId,
-            name: productName,
+    for (const sale of sales) {
+      for (const item of sale.products) {
+        const key = item.name;
+        if (!productMap.has(key)) {
+          productMap.set(key, {
+            name: item.name,
             quantity: 0,
             revenue: 0
-          };
+          });
         }
         
-        productMap[productId].quantity += quantity;
-        productMap[productId].revenue += revenue;
-      });
+        const product = productMap.get(key);
+        product.quantity += item.quantity;
+        product.revenue += item.price * item.quantity;
+      }
+    }
+    
+    productMap.forEach(product => {
+      productSales.push(product);
     });
     
-    // Convert to array and sort by revenue (highest first)
-    const productSales = Object.values(productMap).sort((a, b) => b.revenue - a.revenue);
+    // Sort product sales by revenue (descending)
+    productSales.sort((a, b) => b.revenue - a.revenue);
     
-    // Return report data
-    res.json({
-      period,
-      dateRange: {
-        start,
-        end
-      },
+    // Calculate sales by date
+    const salesByDate = new Map();
+    const dateFormat = period === 'day' || period === 'daily' ? 'hour' : 
+                    period === 'week' || period === 'weekly' ? 'day' : 
+                    period === 'month' || period === 'monthly' ? 'day' : 'month';
+    
+    for (const sale of sales) {
+      let key;
+      const date = new Date(sale.createdAt);
+      
+      if (dateFormat === 'hour') {
+        key = `${date.getHours()}:00`;
+      } else if (dateFormat === 'day') {
+        key = date.toISOString().split('T')[0];
+      } else {
+        key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+      }
+      
+      if (!salesByDate.has(key)) {
+        salesByDate.set(key, 0);
+      }
+      
+      salesByDate.set(key, salesByDate.get(key) + sale.total);
+    }
+    
+    const salesByDateArray = [];
+    salesByDate.forEach((value, key) => {
+      salesByDateArray.push({ date: key, sales: value });
+    });
+    
+    // Calculate sales by cashier
+    const salesByCashier = new Map();
+    
+    for (const sale of sales) {
+      const cashierName = sale.cashier ? 
+        (typeof sale.cashier === 'object' ? sale.cashier.name : sale.cashier) : 
+        'Unknown';
+      
+      if (!salesByCashier.has(cashierName)) {
+        salesByCashier.set(cashierName, 0);
+      }
+      
+      salesByCashier.set(cashierName, salesByCashier.get(cashierName) + sale.total);
+    }
+    
+    const salesByCashierArray = [];
+    salesByCashier.forEach((value, key) => {
+      salesByCashierArray.push({ name: key, sales: value });
+    });
+    
+    // Sort by sales amount (descending)
+    salesByCashierArray.sort((a, b) => b.sales - a.sales);
+    
+    // Prepare response data
+    const reportData = {
       summary: {
         totalSales,
         totalRevenue,
         averageOrderValue
       },
-      sales,
-      productSales
-    });
+      dateRange: {
+        start: start.toISOString(),
+        end: end.toISOString()
+      },
+      sales: salesByDateArray,
+      productSales: productSales.slice(0, 10), // Top 10 products
+      salesByCashier: salesByCashierArray
+    };
+    
+    res.json(reportData);
   } catch (error) {
-    console.error('Error generating report:', error);
+    console.error('Sales report error:', error);
     res.status(500).json({ message: error.message });
   }
 });

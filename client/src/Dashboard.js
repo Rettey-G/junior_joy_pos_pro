@@ -41,64 +41,67 @@ const Dashboard = () => {
           }
           response = await getSalesReport(reportPeriod, customDates.startDate, customDates.endDate);
         } else {
-          // Use a try-catch block specifically for the API call
-          try {
-            // Force cache bypass by adding a timestamp parameter
-            const timestamp = new Date().getTime();
-            // Make sure we're using the correct period format that backend expects
-            const period = reportPeriod === 'daily' ? 'day' : 
-                          reportPeriod === 'weekly' ? 'week' : 
-                          reportPeriod === 'monthly' ? 'month' : 
-                          reportPeriod === 'yearly' ? 'year' : reportPeriod;
-            response = await getSalesReport(period, null, null, timestamp);
-          } catch (apiError) {
-            console.error('API Error:', apiError);
-            // Create a fallback response with empty data
-            response = {
-              data: {
-                summary: { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
-                sales: [],
-                productSales: []
-              }
-            };
-          }
+          // Map client-side period names to server-side expected format
+          const serverPeriod = reportPeriod === 'daily' ? 'day' : 
+                             reportPeriod === 'weekly' ? 'week' : 
+                             reportPeriod === 'monthly' ? 'month' : 
+                             reportPeriod === 'yearly' ? 'year' : reportPeriod;
+          
+          console.log(`Fetching sales report for period: ${serverPeriod}`);
+          const timestamp = new Date().getTime(); // Force cache bypass
+          response = await getSalesReport(serverPeriod, null, null, timestamp);
         }
+        
+        console.log('Report API response:', response);
         
         // Process the data to ensure all values are of the correct type
         if (response && response.data) {
           // Safely process the data
           const processedData = {
-            ...response.data,
             // Ensure summary values are numbers
-            summary: response.data.summary ? {
-              totalSales: Number(response.data.summary.totalSales || 0),
-              totalRevenue: Number(response.data.summary.totalRevenue || 0),
-              averageOrderValue: Number(response.data.summary.averageOrderValue || 0)
-            } : { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
+            summary: {
+              totalSales: Number(response.data.summary?.totalSales || 0),
+              totalRevenue: Number(response.data.summary?.totalRevenue || 0),
+              averageOrderValue: Number(response.data.summary?.averageOrderValue || 0)
+            },
+            // Process date range
+            dateRange: response.data.dateRange || { 
+              start: new Date().toISOString(), 
+              end: new Date().toISOString() 
+            },
             // Ensure sales is an array
             sales: Array.isArray(response.data.sales) ? response.data.sales : [],
             // Ensure productSales is an array
-            productSales: Array.isArray(response.data.productSales) ? response.data.productSales : []
+            productSales: Array.isArray(response.data.productSales) ? response.data.productSales : [],
+            // Ensure salesByCashier is an array
+            salesByCashier: Array.isArray(response.data.salesByCashier) ? response.data.salesByCashier : []
           };
+          
+          console.log('Processed report data:', processedData);
           setReportData(processedData);
         } else {
+          console.log('Invalid or empty report data, using defaults');
           // Set default empty data structure
           setReportData({
             summary: { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
+            dateRange: { start: new Date().toISOString(), end: new Date().toISOString() },
             sales: [],
-            productSales: []
+            productSales: [],
+            salesByCashier: []
           });
         }
         
         setError(null);
       } catch (err) {
-        setError('Error fetching report: ' + err.message);
         console.error('Error fetching report:', err);
+        setError('Error fetching report: ' + err.message);
         // Set default empty data structure on error
         setReportData({
           summary: { totalSales: 0, totalRevenue: 0, averageOrderValue: 0 },
+          dateRange: { start: new Date().toISOString(), end: new Date().toISOString() },
           sales: [],
-          productSales: []
+          productSales: [],
+          salesByCashier: []
         });
       } finally {
         setLoading(false);
