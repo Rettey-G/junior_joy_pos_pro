@@ -164,11 +164,12 @@ const Navigation = ({ onNavigate, currentPage }) => {
             
             {/* Mobile Navigation */}
             <div className={`mobile-nav ${mobileMenuOpen ? 'active' : ''}`}>
-              {navButtons.map(button => (
+              {/* Combine all button groups for mobile navigation */}
+              {[...groupedNavButtons.main, ...groupedNavButtons.secondary, ...groupedNavButtons.reports, ...groupedNavButtons.admin].map(button => (
                 <button 
                   key={button.id}
                   onClick={() => handleNavigation(button.id)}
-                  className={`nav-button ${currentPage === button.id ? 'active' : ''}`}
+                  className={`nav-button ${currentPage === button.id ? 'active' : ''} ${button.id === 'users' ? 'admin-button' : ''}`}
                 >
                   {button.label}
                 </button>
