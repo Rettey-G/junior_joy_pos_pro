@@ -53,14 +53,14 @@ router.post('/', auth, async (req, res) => {
           const product = await Product.findById(item.product);
           if (product) {
             // Check if enough stock
-            if (product.stock < item.quantity) {
+            if (product.SOH < item.quantity) {
               return res.status(400).json({ 
-                message: `Not enough stock for ${product.name}. Available: ${product.stock}` 
+                message: `Not enough stock for ${product.name}. Available: ${product.SOH}` 
               });
             }
             
             // Update product stock
-            product.stock -= item.quantity;
+            product.SOH -= item.quantity;
             await product.save();
           }
         } catch (err) {
@@ -206,7 +206,7 @@ router.patch('/:id/status', auth, async (req, res) => {
         if (item.product) {
           const product = await Product.findById(item.product);
           if (product) {
-            product.stock += item.quantity;
+            product.SOH += item.quantity;
             await product.save();
           }
         }

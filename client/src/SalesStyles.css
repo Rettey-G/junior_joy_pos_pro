@@ -20,7 +20,8 @@
   margin: 0 auto;
   padding: 10px 20px 60px 20px;
   font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-  min-height: 80vh;
+  min-height: 85vh;
+  margin-bottom: 40px;
 }
 
 .sales-header {
@@ -163,6 +164,7 @@
 
 /* Products Grid */
 .product-grid {
+  margin-bottom: 20px; /* Ensure space below products grid */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
