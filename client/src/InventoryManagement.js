@@ -345,59 +345,63 @@ const InventoryManagement = () => {
           </button>
         </div>
       </div>
-      <div className="card-body p-0">
-        <div className="table-responsive">
-          <table className="table table-striped table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Stock</th>
-                <th>Cost Price</th>
-                <th>Selling Price</th>
-                <th>Value</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.length === 0 ? (
+      <div className="card">
+        <div className="card-header bg-primary text-white">
+          <h5 className="mb-0">Product Inventory</h5>
+        </div>
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <table className="table table-striped table-hover mb-0">
+              <thead>
                 <tr>
-                  <td colSpan="8" className="text-center py-3">No products found</td>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Stock</th>
+                  <th>Cost Price</th>
+                  <th>Selling Price</th>
+                  <th>Value</th>
+                  <th>Actions</th>
                 </tr>
-              ) : (
-                filteredProducts.map(product => (
-                  <tr key={product._id}>
-                    <td>{product.code}</td>
-                    <td>{product.name}</td>
-                    <td>{product.category}</td>
-                    <td>
-                      <span className={`badge ${
-                        product.SOH === 0 ? 'bg-danger' : 
-                        product.SOH <= 5 ? 'bg-warning' : 'bg-success'
-                      }`}>
-                        {product.SOH}
-                      </span>
-                    </td>
-                    <td>{formatCurrency(product.costPrice || 0)}</td>
-                    <td>{formatCurrency(product.price)}</td>
-                    <td>{formatCurrency(product.SOH * product.price)}</td>
-                    <td>
-                      <button 
-                        className="btn btn-sm btn-primary"
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowAdjustmentModal(true);
-                        }}
-                      >
-                        Adjust
-                      </button>
-                    </td>
+              </thead>
+              <tbody>
+                {filteredProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="text-center py-3">No products found</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  filteredProducts.map(product => (
+                    <tr key={product._id}>
+                      <td>{product.code}</td>
+                      <td>{product.name}</td>
+                      <td>{product.category}</td>
+                      <td>
+                        <span className={`badge ${
+                          product.SOH === 0 ? 'bg-danger' : 
+                          product.SOH <= 5 ? 'bg-warning' : 'bg-success'
+                        }`}>
+                          {product.SOH}
+                        </span>
+                      </td>
+                      <td>{formatCurrency(product.costPrice || 0)}</td>
+                      <td>{formatCurrency(product.price)}</td>
+                      <td>{formatCurrency(product.SOH * product.price)}</td>
+                      <td>
+                        <button 
+                          className="btn btn-sm btn-primary"
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setShowAdjustmentModal(true);
+                          }}
+                        >
+                          Adjust
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
