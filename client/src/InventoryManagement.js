@@ -398,7 +398,6 @@ const InventoryManagement = () => {
               )}
             </tbody>
           </table>
-            </table>
           </div>
         </div>
       </div>
