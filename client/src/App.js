@@ -51,26 +51,28 @@ const Navigation = ({ onNavigate, currentPage }) => {
     setMobileMenuOpen(false); // Close mobile menu after navigation
   };
   
-  // Navigation buttons array to avoid repetition
-  const navButtons = [
-    { id: 'products', label: 'Products' },
-    { id: 'sales', label: 'New Sale' },
-    { id: 'bills', label: 'Bills' },
-    { id: 'customers', label: 'Customers' },
-    { id: 'employees', label: 'Employees' },
-    { id: 'inventory', label: 'Inventory' },
-    { id: 'suppliers', label: 'Suppliers' },
-    { id: 'purchase-orders', label: 'Purchase Orders' },
-    { id: 'reports', label: 'Sales Reports' },
-    { id: 'invoices', label: 'Invoices' },
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'training', label: 'Training' },
-  ];
-  
-  // If user is admin, add Users page
-  if (isAdmin) {
-    navButtons.push({ id: 'users', label: 'Users' });
-  }
+  // Group navigation buttons into categories for better organization
+  const groupedNavButtons = {
+    main: [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'products', label: 'Products' },
+      { id: 'sales', label: 'New Sale' },
+      { id: 'bills', label: 'Bills' },
+    ],
+    secondary: [
+      { id: 'customers', label: 'Customers' },
+      { id: 'employees', label: 'Employees' },
+      { id: 'inventory', label: 'Inventory' },
+      { id: 'suppliers', label: 'Suppliers' },
+    ],
+    reports: [
+      { id: 'reports', label: 'Reports' },
+      { id: 'invoices', label: 'Invoices' },
+      { id: 'purchase-orders', label: 'Orders' },
+      { id: 'training', label: 'Training' },
+    ],
+    admin: isAdmin ? [{ id: 'users', label: 'Users' }] : []
+  };
   
   return (
     <nav className="navbar fixed-navbar">
@@ -95,20 +97,55 @@ const Navigation = ({ onNavigate, currentPage }) => {
                 Welcome, {safeRender(user?.name)} ({safeRender(user?.role)})
               </div>
               
-              {/* Desktop Navigation */}
+              {/* Desktop Navigation - Organized by groups */}
               <div className="navbar-nav">
-                {navButtons.map(button => (
+                {/* Main group */}
+                {groupedNavButtons.main.map(button => (
                   <button 
-                    key={button.id}
-                    onClick={() => handleNavigation(button.id)}
+                    key={button.id} 
                     className={`nav-button ${currentPage === button.id ? 'active' : ''}`}
+                    onClick={() => handleNavigation(button.id)}
                   >
                     {button.label}
                   </button>
                 ))}
+                
+                {/* Secondary group */}
+                {groupedNavButtons.secondary.map(button => (
+                  <button 
+                    key={button.id} 
+                    className={`nav-button ${currentPage === button.id ? 'active' : ''}`}
+                    onClick={() => handleNavigation(button.id)}
+                  >
+                    {button.label}
+                  </button>
+                ))}
+                
+                {/* Reports group */}
+                {groupedNavButtons.reports.map(button => (
+                  <button 
+                    key={button.id} 
+                    className={`nav-button ${currentPage === button.id ? 'active' : ''}`}
+                    onClick={() => handleNavigation(button.id)}
+                  >
+                    {button.label}
+                  </button>
+                ))}
+                
+                {/* Admin group */}
+                {groupedNavButtons.admin.map(button => (
+                  <button 
+                    key={button.id} 
+                    className={`nav-button admin-button ${currentPage === button.id ? 'active' : ''}`}
+                    onClick={() => handleNavigation(button.id)}
+                  >
+                    {button.label}
+                  </button>
+                ))}
+                
                 <button 
-                  onClick={logout}
                   className="nav-button logout-button"
+                  onClick={logout}
                 >
                   Logout
                 </button>
