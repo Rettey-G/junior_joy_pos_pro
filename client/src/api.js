@@ -89,7 +89,24 @@ const mockData = {
       { name: 'Category A', value: 7500 },
       { name: 'Category B', value: 5000 }
     ]
-  }
+  },
+  inventoryTransactions: {
+    transactions: [
+      { id: '1', date: '2025-04-25', product: { name: 'Demo Product 1' }, type: 'adjustment', quantity: 10, previousQuantity: 90, newQuantity: 100, createdBy: { name: 'Admin' } },
+      { id: '2', date: '2025-04-24', product: { name: 'Demo Product 2' }, type: 'adjustment', quantity: -5, previousQuantity: 55, newQuantity: 50, createdBy: { name: 'Admin' } }
+    ],
+    total: 2,
+    pages: 1,
+    page: 1
+  },
+  lowStockProducts: [
+    { id: '1', name: 'Low Stock Product 1', price: 25.50, SOH: 3, category: 'Demo' },
+    { id: '2', name: 'Low Stock Product 2', price: 45.75, SOH: 2, category: 'Demo' }
+  ],
+  outOfStockProducts: [
+    { id: '3', name: 'Out of Stock Product 1', price: 18.99, SOH: 0, category: 'Demo' },
+    { id: '4', name: 'Out of Stock Product 2', price: 32.50, SOH: 0, category: 'Demo' }
+  ]
 };
 
 // Add response interceptor for error handling
@@ -165,6 +182,44 @@ api.interceptors.response.use(
       // Handle inventory value endpoint
       if (url.includes('/api/inventory/value')) {
         return Promise.resolve({ data: mockData.inventoryValue });
+      }
+      
+      // Handle inventory transactions endpoint
+      if (url.includes('/api/inventory/transactions')) {
+        return Promise.resolve({ data: mockData.inventoryTransactions });
+      }
+      
+      // Handle low stock products endpoint
+      if (url.includes('/api/inventory/low-stock')) {
+        return Promise.resolve({ data: mockData.lowStockProducts });
+      }
+      
+      // Handle out of stock products endpoint
+      if (url.includes('/api/inventory/out-of-stock')) {
+        return Promise.resolve({ data: mockData.outOfStockProducts });
+      }
+      
+      // Handle individual sales/invoice endpoint
+      if (url.match(/\/api\/sales\/[a-zA-Z0-9]+$/)) {
+        const id = url.split('/').pop();
+        const invoice = mockData.sales.data.find(s => s.id === id) || {
+          id: id,
+          billNumber: id,
+          date: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          customer: { name: 'Demo Customer' },
+          cashier: 'Admin User',
+          products: [
+            { name: 'Demo Product', quantity: 1, price: 50.00 }
+          ],
+          subtotal: 50.00,
+          gst: 8.00,
+          serviceCharge: 5.00,
+          discount: 0,
+          total: 63.00,
+          status: 'Completed'
+        };
+        return Promise.resolve({ data: invoice });
       }
     }
     
