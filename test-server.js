@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const config = require('./config');  // Import configuration
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,15 +37,18 @@ app.get('/health', (req, res) => {
 const connectDB = async () => {
   console.log('Attempting to connect to MongoDB...');
   try {
-    if (!process.env.MONGODB_URI) {
-      console.error('MONGODB_URI environment variable is not set!');
+    // Use config.js instead of environment variables
+    const mongoURI = config.MONGODB_URI;
+    
+    if (!mongoURI) {
+      console.error('MongoDB URI is not set in config.js!');
       return;
     }
     
     console.log('Connecting to MongoDB with URI:', 
-      process.env.MONGODB_URI.substring(0, 20) + '...[REDACTED]');
+      mongoURI.substring(0, 20) + '...[REDACTED]');
     
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(mongoURI);
     console.log('MongoDB connected successfully');
   } catch (err) {
     console.error('MongoDB connection error:', err);
