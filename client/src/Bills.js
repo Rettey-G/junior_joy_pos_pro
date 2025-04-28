@@ -446,7 +446,7 @@ const Bills = () => {
                       </ul>
                     )}
                   </td>
-                  <td>MVR {bill.total.toFixed(2)}</td>
+                  <td>MVR {typeof bill.total === 'number' ? bill.total.toFixed(2) : '0.00'}</td>
                   <td>
                     {editingBillId === bill._id ? (
                       <>
