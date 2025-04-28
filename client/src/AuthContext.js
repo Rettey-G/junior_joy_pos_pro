@@ -33,61 +33,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setError(null);
-      
-      // Special hardcoded credentials that always work
-      if (
-        (credentials.username === 'website_user' && credentials.password === 'website123') ||
-        (credentials.username === 'admin' && credentials.password === '123456')
-      ) {
-        console.log('Using hardcoded login credentials');
-        
-        // Create a user object with admin privileges
-        const userData = {
-          token: 'hardcoded-token-' + Date.now(),
-          user: {
-            id: credentials.username === 'website_user' ? '1001' : '1000',
-            username: credentials.username,
-            name: credentials.username === 'website_user' ? 'Website User' : 'Admin User',
-            role: 'admin'
-          }
-        };
-        
-        // Store authentication data
-        localStorage.setItem('token', userData.token);
-        setUser(userData.user);
-        return userData;
-      }
-      
-      // Regular API login if hardcoded credentials don't match
+      // Always use backend for login
       const response = await loginUser(credentials);
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       setUser(response.data.user);
       return response.data;
     } catch (err) {
-      // If API call fails, try hardcoded credentials as fallback
-      if (
-        (credentials.username === 'website_user' && credentials.password === 'website123') ||
-        (credentials.username === 'admin' && credentials.password === '123456')
-      ) {
-        console.log('API login failed, using hardcoded credentials as fallback');
-        
-        // Create a user object with admin privileges
-        const userData = {
-          token: 'fallback-token-' + Date.now(),
-          user: {
-            id: credentials.username === 'website_user' ? '1001' : '1000',
-            username: credentials.username,
-            name: credentials.username === 'website_user' ? 'Website User' : 'Admin User',
-            role: 'admin'
-          }
-        };
-        
-        // Store authentication data
-        localStorage.setItem('token', userData.token);
-        setUser(userData.user);
-        return userData;
-      }
-      
       setError(err.response?.data?.message || 'Login failed');
       throw err;
     }
@@ -99,6 +51,7 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const response = await registerUser(userData);
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       setUser(response.data.user);
       return response.data;
     } catch (err) {
@@ -110,6 +63,7 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
