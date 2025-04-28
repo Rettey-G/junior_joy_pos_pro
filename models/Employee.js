@@ -6,46 +6,34 @@ const EmployeeSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  pictureUrl: {
+  email: {
     type: String,
-    default: ''
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'manager', 'cashier', 'staff'],
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['active', 'inactive'],
+    default: 'active'
   },
   hireDate: {
     type: Date,
     default: Date.now
   },
-  gender: {
-    type: String,
-    enum: ['Male', 'Female', 'Other'],
-    default: 'Male'
-  },
-  dateOfBirth: {
-    type: Date
-  },
-  salaryMVR: {
+  salary: {
     type: Number,
-    required: true,
-    default: 0
-  },
-  salaryUSD: {
-    type: Number,
-    default: function() {
-      // Default conversion rate from MVR to USD (1 MVR ≈ 0.065 USD)
-      return this.salaryMVR ? Math.round(this.salaryMVR * 0.065 * 100) / 100 : 0;
-    }
-  },
-  position: {
-    type: String,
-    enum: ['Manager', 'Supervisor', 'Cashier', 'Staff', 'Admin'],
-    default: 'Staff'
-  },
-  phone: {
-    type: String,
-    default: ''
-  },
-  email: {
-    type: String,
-    default: ''
+    min: 0
   },
   createdAt: {
     type: Date,

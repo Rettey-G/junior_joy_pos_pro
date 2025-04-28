@@ -44,8 +44,8 @@ const PurchaseOrderSchema = new Schema({
   items: [PurchaseOrderItemSchema],
   status: {
     type: String,
-    enum: ['draft', 'ordered', 'partially_received', 'received', 'cancelled'],
-    default: 'draft'
+    enum: ['pending', 'approved', 'received', 'cancelled'],
+    default: 'pending'
   },
   orderDate: {
     type: Date,
@@ -88,7 +88,8 @@ const PurchaseOrderSchema = new Schema({
   },
   createdBy: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'Employee',
+    required: true
   },
   createdAt: {
     type: Date,

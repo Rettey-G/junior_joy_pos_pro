@@ -1,0 +1,11 @@
+[
+  {
+    "_id": "680ee31327bc2b32be5e9926",
+    "username": "test_user",
+    "password": "$2a$10$FLuVWDDKMs9HVVpWI0dp1.9zUDcNq1KEeVRYyanZQOPia9V26aAUe",
+    "name": "Test User",
+    "role": "admin",
+    "createdAt": "2025-04-28T02:08:19.521Z",
+    "__v": 0
+  }
+]

@@ -19,31 +19,11 @@ const CustomerSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  membershipType: {
-    type: String,
-    enum: ['None', 'Silver', 'Gold', 'Platinum'],
-    default: 'None'
-  },
-  membershipStartDate: {
-    type: Date
-  },
-  membershipEndDate: {
-    type: Date
-  },
-  discountPercentage: {
+  loyaltyPoints: {
     type: Number,
-    default: 0,
-    min: 0,
-    max: 100
-  },
-  notes: {
-    type: String
+    default: 0
   },
   createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
     type: Date,
     default: Date.now
   }
